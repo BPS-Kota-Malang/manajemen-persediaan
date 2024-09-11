@@ -36,6 +36,7 @@ class ProductResource extends Resource
                 Forms\Components\Select::make('unit_id')
                 ->relationship('unit', 'name')
                 ->required(),
+                Forms\Components\TextInput::make('stok'),
             ]);
     }
 
@@ -55,6 +56,8 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('brand.name')
                 ->searchable(),
                 Tables\Columns\TextColumn::make('unit.name')
+                ->searchable(),
+                Tables\Columns\TextColumn::make('stok')
                 ->searchable(),
             ])
             ->filters([

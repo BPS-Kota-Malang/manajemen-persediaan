@@ -24,8 +24,13 @@ class Product extends Model
         return $this->belongsTo(Unit::class);
     }
 
+    public function in_transaction_detail(): BelongsTo
+    {
+        return $this->belongsTo(InTransactionDetail::class);
+    }
+
     protected $fillable = [
-        'name','code','price','category_id','brand_id','unit_id',
+        'code','name','price','category_id','brand_id','unit_id','stok'
     ];
 
 }
