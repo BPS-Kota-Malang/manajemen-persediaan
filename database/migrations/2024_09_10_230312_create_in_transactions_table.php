@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('in_transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete();
-            $table->datetime('datetime');
+            //$table->datetime('datetime');
             $table->timestamps();
         });
     }

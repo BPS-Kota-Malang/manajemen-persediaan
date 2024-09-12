@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,13 +25,13 @@ class Product extends Model
         return $this->belongsTo(Unit::class);
     }
 
-    public function in_transaction_detail(): BelongsTo
-    {
-        return $this->belongsTo(InTransactionDetail::class);
-    }
+    // public function in_transaction_detail()
+    // {
+    //     return $this->hasMany(InTransactionDetail::class);
+    // }
 
     protected $fillable = [
-        'code','name','price','category_id','brand_id','unit_id','stok'
+        'code','name','price','stok','category_id','brand_id','unit_id',
     ];
 
 }

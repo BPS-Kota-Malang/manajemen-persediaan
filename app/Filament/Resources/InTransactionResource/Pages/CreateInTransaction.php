@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\InTransactionResource\Pages;
 
 use App\Filament\Resources\InTransactionResource;
+use App\Models\Employee;
 use Filament\Resources\Pages\CreateRecord;
 use App\Models\User;
 
@@ -13,6 +14,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Model;
+use Filament\Notifications\Actions\Action;
+use Filament\Notifications\Notification;
+
 
 class CreateInTransaction extends CreateRecord
 {
@@ -20,51 +25,24 @@ class CreateInTransaction extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        DB::transaction(function () use (&$data) {
-            $user = auth()->user(); 
-
-
-            // Simpan data employee
-            // $employee = Employee::create([
-            //     'nip' => $employeeData['nip'],
-            //     'name' => $employeeData['name'],
-            //     'email' => $employeeData['email'],
-            //     'no_handphone' => $employeeData['no_handphone'],
-            //     'alamat' => $employeeData['alamat'],
-            // ]);
-
-            // Simpan data transaksi
-            $inTransaction = InTransaction::create([
-                'user_id' => $user->id,
-                'datetime' => now(),
-            ]);
-
-            // Simpan data transaksi detail
-            foreach ($data['in_transaction_details'] as $detail) {
-                InTransactionDetail::create([
-                    'in_transaction_id' => $inTransaction->id,
-                    'product_id' => $detail['product_id'],
-                    'qty' => $detail['qty'],
-                    'price' => $detail['price'],
-                ]);
-
-                // Update stok produk
-                $product = Product::find($detail['product_id']);
-                if ($product) {
-                    // Mengurangi stok sesuai jumlah transaksi
-                    if ($product->stok >= $detail['qty']) {
-                        $product->stok += $detail['qty'];
-                        $product->save();
-                    } else {
-                        //throw new \Exception("Stok produk tidak mencukupi.");
-                    }
-                }
-            }
-
-            // Mengupdate data transaksi dengan ID employee
-            $data['user_id'] = $user->id;
-        });
-
+        $data['user_id'] = Auth::id();
         return $data;
+
     }
+
+    protected function handleRecordCreation(array $data): Model
+    {
+        return static::getModel()::create($data);
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+
+    protected function getCreatedNotificationTitle(): ?string
+    {
+        return 'Pembelian disimpan';
+    }
+
 }
