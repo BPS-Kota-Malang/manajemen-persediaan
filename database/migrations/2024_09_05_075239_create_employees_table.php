@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
             $table->integer('nip');
+            $table->string('name');
             $table->integer('no_handphone');
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('jabatan_id')->constrained('jabatans')->cascadeOnDelete();

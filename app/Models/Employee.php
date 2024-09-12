@@ -20,4 +20,8 @@ class Employee extends Model
         return $this->belongsTo(team::class);
     }
 
+    public function in_transaction(): BelongsTo
+    {
+        return $this->belongsTo(InTransaction::class);
+    }
 }
