@@ -19,12 +19,10 @@ class ProductResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    public static function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                //
-                Forms\Components\TextInput::make('code'),
+
+    public static function getForm(){
+        return [
+            Forms\Components\TextInput::make('code'),
                 Forms\Components\TextInput::make('name'),
                 Forms\Components\TextInput::make('price'),
                 Forms\Components\Select::make('category_id')
@@ -37,6 +35,15 @@ class ProductResource extends Resource
                 ->relationship('unit', 'name')
                 ->required(),
                 Forms\Components\TextInput::make('stok'),
+        ];
+    }
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                //
+                self::getForm()
             ]);
     }
 

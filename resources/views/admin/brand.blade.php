@@ -8,10 +8,10 @@
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
                 <th scope="col" class="px-6 py-3">
-                    Nama Merk
+                    Kode Merk
                 </th>
                 <th scope="col" class="px-6 py-3">
-                    Kode Merk
+                    Nama Merk
                 </th>
                 <th scope="col" class="px-6 py-3">
                     <span class="sr-only"></span>
@@ -22,13 +22,18 @@
             @foreach ($brands as $brand)
             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                 <td scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                    {{$brand->code}}
+                </td>
+                <td scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                     {{$brand->name}}
                 </td>
-                <td class="px-6 py-4">
-                    Silver
-                </td>
                 <td class="px-6 py-4 text-right">
-                    <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+                    <a href="#" class="text-blue-600 dark:text-blue-500 hover:underline mr-2">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="#" class="text-red-600 dark:text-red-500 hover:underline">
+                        <i class="fas fa-trash"></i>
+                    </a>
                 </td>
             </tr>
             @endforeach

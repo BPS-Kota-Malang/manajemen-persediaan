@@ -48,4 +48,11 @@ Route::post('/categories', [CategoryController::class, 'store'])->name('categori
 Route::get('/brand', [BrandController::class, 'index']);
 Route::get('/product', [ProductController::class, 'index']);
 
+// Route untuk menampilkan form kategori
+Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
+
+// Route untuk menyimpan kategori baru
+Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+
+
 require __DIR__.'/auth.php';

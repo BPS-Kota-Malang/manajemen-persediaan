@@ -40,12 +40,17 @@
                 <td class="px-6 py-4">{{ $product->id }}</td>
                 <td class="px-6 py-4">{{ $product->code }}</td>
                 <td class="px-6 py-4">{{ $product->name }}</td>
-                <td class="px-6 py-4">${{ number_format($product->price, 2) }}</td>
-                <td class="px-6 py-4">{{ $product->category_id }}</td>
-                <td class="px-6 py-4">{{ $product->brand_id }}</td>
-                <td class="px-6 py-4">{{ $product->unit_id }}</td>
+                <td class="px-6 py-4">Rp {{ number_format($product->price, 0, ',', '.') }}</td>
+                <td class="px-6 py-4">{{ $product->category->name }}</td>
+                <td class="px-6 py-4">{{ $product->brand->name}}</td>
+                <td class="px-6 py-4">{{ $product->unit->name }}</td>
                 <td class="px-6 py-4 text-right">
-                    <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
+                    <a href="#" class="text-blue-600 dark:text-blue-500 hover:underline mr-2">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="#" class="text-red-600 dark:text-red-500 hover:underline">
+                        <i class="fas fa-trash"></i>
+                    </a>
                 </td>
             </tr>
             @endforeach

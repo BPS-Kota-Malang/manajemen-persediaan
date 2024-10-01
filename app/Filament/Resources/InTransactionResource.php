@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\Relationship;
 
 class InTransactionResource extends Resource
 {
@@ -33,7 +34,7 @@ class InTransactionResource extends Resource
                             ->required(),
                     ])
                 
-                    ->columns(2),
+                    ->columnSpan(4), 
 
                 Forms\Components\Section::make('Barang Masuk')
                     ->schema([
@@ -58,6 +59,15 @@ class InTransactionResource extends Resource
                                             ->pluck('name', 'id')
                                     )
                                     ->getOptionLabelUsing(fn ($value): ?string => Product::find($value)?->name)
+                                    ->createOptionForm(
+                                        \App\Filament\Resources\ProductResource::getForm()
+                                    )
+                                    ->Relationship('product', 'name')
+                                    ->createOptionUsing(function (array $data): int {
+                                        return \App\Models\Product::create($data)->id;
+                                        // $data->where('product_id', ProductResource::getTenant()->id)
+                                        //         ->where('active','true');                                    
+                                    })
                                     ->required()
                                     ->columnSpan(5),
 
@@ -69,6 +79,8 @@ class InTransactionResource extends Resource
                                         if ($product) {
                                             $totalPrice = $state * $product->price;
                                             $set('price', $totalPrice);
+                                            $set('price-shown', $totalPrice);
+
                                         }
                                     })
                                     ->minValue(1)
@@ -76,10 +88,16 @@ class InTransactionResource extends Resource
                                     ->required()
                                     ->columnSpan(2),
 
+                                // Forms\Components\TextInput::make('price-shown')
+                                //     ->prefix('Rp')
+                                //     ->required()
+                                //     ->disabled()
+                                //     ->columnSpan(3),
+
                                 Forms\Components\TextInput::make('price')
                                     ->prefix('Rp')
-                                    //->disabled() 
                                     ->required()
+                                    // ->hidden()
                                     ->columnSpan(3),
                             ])
                             ->reactive()
@@ -105,8 +123,20 @@ class InTransactionResource extends Resource
                 Tables\Columns\TextColumn::make('employee.name')
                     ->label('Nama Pegawai')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('detail.product.name')
+                    ->label('transaction id')
+                    ->searchable(),
             ])
-            ->defaultSort('updated_at', 'desc');
+            ->defaultSort('updated_at', 'desc')
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
     }
 
     public static function getRelations(): array
