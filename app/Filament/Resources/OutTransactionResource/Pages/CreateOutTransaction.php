@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Filament\Resources\InTransactionResource\Pages;
+namespace App\Filament\Resources\OutTransactionResource\Pages;
 
-use App\Filament\Resources\InTransactionResource;
+use App\Filament\Resources\OutTransactionResource;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 
-class CreateInTransaction extends CreateRecord
+class CreateOutTransaction extends CreateRecord
 {
-    protected static string $resource = InTransactionResource::class;
+    protected static string $resource = OutTransactionResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
@@ -32,6 +32,6 @@ class CreateInTransaction extends CreateRecord
 
     protected function getCreatedNotificationTitle(): ?string
     {
-        return 'Pembelian disimpan';
+        return 'Penjualan disimpan';
     }
 }

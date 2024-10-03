@@ -31,7 +31,7 @@ class Product extends Model
     // }
 
     protected $fillable = [
-        'code','name','price','stok','category_id','brand_id','unit_id',
+        'code','name','price','stok','category_id','brand_id','conversion_rate',
     ];
 
 }

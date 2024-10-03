@@ -12,40 +12,63 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use PhpParser\Node\Stmt\Label;
 
 class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-gift';
 
 
-    public static function getForm(){
-        return [
-            Forms\Components\TextInput::make('code'),
-                Forms\Components\TextInput::make('name'),
-                Forms\Components\TextInput::make('price'),
-                Forms\Components\Select::make('category_id')
-                ->relationship('category', 'name')
-                ->required(),
-                Forms\Components\Select::make('brand_id')
-                ->relationship('brand', 'name')
-                ->required(),
-                Forms\Components\Select::make('unit_id')
-                ->relationship('unit', 'name')
-                ->required(),
-                Forms\Components\TextInput::make('stok'),
-        ];
-    }
+    public static function getForm(): array
+{
+    return [
+        Forms\Components\TextInput::make('code')
+            ->label('Kode Produk')
+            ->required(),
 
-    public static function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                //
-                self::getForm()
-            ]);
-    }
+        Forms\Components\TextInput::make('name')
+            ->label('Nama Produk')
+            ->required(),
+
+        Forms\Components\TextInput::make('price')
+            ->label('Harga')
+            ->numeric()
+            ->required(),
+
+        Forms\Components\Select::make('category_id')
+            ->label('Kategori')
+            ->relationship('category', 'name')
+            ->required(),
+
+        Forms\Components\Select::make('brand_id')
+            ->label('Merek')
+            ->relationship('brand', 'name')
+            ->required(),
+
+        Forms\Components\TextInput::make('stok')
+            ->label('Stok')
+            ->numeric()
+            ->required(),
+
+        Forms\Components\TextInput::make('conversion_rate')
+            ->label('Pcs Per Pack')
+            ->numeric()
+            ->required(),
+    ];
+}
+
+
+
+public static function form(Form $form): Form
+{
+    return $form
+        ->schema(
+            self::getForm()  // Memastikan ini mengembalikan array dari komponen-komponen form
+        );
+}
+
 
     public static function table(Table $table): Table
     {
@@ -62,9 +85,10 @@ class ProductResource extends Resource
                 ->searchable(),
                 Tables\Columns\TextColumn::make('brand.name')
                 ->searchable(),
-                Tables\Columns\TextColumn::make('unit.name')
-                ->searchable(),
                 Tables\Columns\TextColumn::make('stok')
+                ->searchable(),
+                Tables\Columns\TextColumn::make('conversion_rate')
+                ->label('Qty per Pack')
                 ->searchable(),
             ])
             ->filters([

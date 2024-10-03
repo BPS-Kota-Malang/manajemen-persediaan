@@ -20,8 +20,8 @@ class Employee extends Model
         return $this->belongsTo(team::class);
     }
 
-    public function in_transaction(): BelongsTo
+    public function buy(): BelongsTo
     {
-        return $this->belongsTo(InTransaction::class);
+        return $this->belongsTo(Buy::class);
     }
 }
