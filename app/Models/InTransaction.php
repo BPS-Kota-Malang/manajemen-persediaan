@@ -20,10 +20,11 @@ class InTransaction extends Model
         return $this->belongsTo(Employee::class);
     }
 
-    public function in_transaction_details()
+    public function inTransactionDetails()
     {
-        return $this->hasMany(InTransactionDetail::class, 'in_transaction_id');
+        return $this->hasMany(InTransactionDetail::class);
     }
+    
 
     public function getTotalAmountAttribute()
     {
