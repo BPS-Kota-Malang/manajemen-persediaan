@@ -19,10 +19,11 @@ class InTransactionDetail extends Model
         'qty',
         'price',
         'unit',
+        'qty_in_pcs',
         'amount'
     ];
 
-    public function InTransaction(): BelongsTo
+    public function inTransaction(): BelongsTo
     {
         return $this->belongsTo(InTransaction::class);
     }
@@ -32,30 +33,38 @@ class InTransactionDetail extends Model
         return $this->belongsTo(Product::class);
     }
 
-    protected static function booted()
+    public function getUnits(): array
+{
+    return [
+        $this->product->unit_1,
+        $this->product->unit_2,
+    ];
+}
+
+public function getConversionRate(): int
+{
+    return $this->product->conversion_rate ?? 10; // Mengembalikan 1 jika tidak ada produk
+}
+
+protected static function booted()
 {
     static::created(function ($inDetail) {
-        // Cari produk berdasarkan product_id
         $product = Product::find($inDetail->product_id);
 
         if ($product) {
-            // Default qty adalah dalam pcs
-            $qtyInPcs = $inDetail->qty;
+            // Ambil unit yang dipilih
+            $unitType = request()->input('in_transaction_details.' . $inDetail->id . '.unit_type');
+            $qtyInPcs = $inDetail->qty; // Default qtyInPcs
 
-            // Cek apakah request 'in_transaction_details' dan 'unit_type' ada
-            $inDetails = request()->input('buy_items', []); // Mengambil array 'in_transaction_details', atau array kosong jika tidak ada
-
-            if (isset($inDetails[$inDetail->id]) && isset($inDetails[$inDetail->id]['unit_type'])) {
-                $unitType = $inDetails[$inDetail->id]['unit_type'];
-
-                if ($unitType === 'pack') {
-                    $pcsPerPack = 10; // Sesuaikan dengan jumlah pcs per pack
-                    $qtyInPcs = $inDetail->qty * $pcsPerPack;
-                }
+            if ($unitType === $product->unit_1) {
+                // Jika unit_1 dipilih, konversi qty ke pcs
+                $qtyInPcs *= $inDetail->getConversionRate(); // Gunakan getConversionRate
             }
 
-            // Tambahkan qtyInPcs ke stok produk
-            $product->stok += $qtyInPcs;
+            // Update qty_in_pcs dan stok produk
+            $inDetail->qty_in_pcs = $qtyInPcs; // Simpan qty_in_pcs
+            $inDetail->save(); // Simpan perubahan
+            $product->stok += $qtyInPcs; // Tambahkan qtyInPcs ke stok produk
             $product->save();
         }
     });

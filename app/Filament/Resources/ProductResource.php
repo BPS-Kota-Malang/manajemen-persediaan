@@ -32,11 +32,6 @@ class ProductResource extends Resource
             ->label('Nama Produk')
             ->required(),
 
-        Forms\Components\TextInput::make('price')
-            ->label('Harga')
-            ->numeric()
-            ->required(),
-
         Forms\Components\Select::make('category_id')
             ->label('Kategori')
             ->relationship('category', 'name')
@@ -50,6 +45,22 @@ class ProductResource extends Resource
         Forms\Components\TextInput::make('stok')
             ->label('Stok')
             ->numeric()
+            ->required(),
+
+            Forms\Components\Select::make('unit_1')
+            ->label('Satuan 1')
+            ->options([
+                'box' => 'Box',
+                'pack' => 'Pack',
+            ])
+            ->required(),
+
+        Forms\Components\Select::make('unit_2')
+            ->label('Satuan 2')
+            ->options([
+                'pcs' => 'Pcs',
+                'rim' => 'Rim',
+            ])
             ->required(),
 
         Forms\Components\TextInput::make('conversion_rate')
@@ -79,13 +90,15 @@ public static function form(Form $form): Form
                 ->searchable(),
                 Tables\Columns\TextColumn::make('name')
                 ->searchable(),
-                Tables\Columns\TextColumn::make('price')
-                ->searchable(),
                 Tables\Columns\TextColumn::make('category.name')
                 ->searchable(),
                 Tables\Columns\TextColumn::make('brand.name')
                 ->searchable(),
                 Tables\Columns\TextColumn::make('stok')
+                ->searchable(),
+                Tables\Columns\TextColumn::make('unit_1')
+                ->searchable(),
+                Tables\Columns\TextColumn::make('unit_2')
                 ->searchable(),
                 Tables\Columns\TextColumn::make('conversion_rate')
                 ->label('Qty per Pack')
