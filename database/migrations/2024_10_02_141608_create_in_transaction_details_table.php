@@ -18,8 +18,8 @@ return new class extends Migration
             $table->integer('qty');
             $table->string('unit');
             $table->integer('qty_in_pcs')->default(0);
-            $table->decimal('price', 10, 2);
-            $table->decimal('amount', 10, 2)->default(0); 
+            $table->decimal('price', 10);
+            $table->decimal('amount', 10)->default(0); 
             $table->timestamps();
         });
     }

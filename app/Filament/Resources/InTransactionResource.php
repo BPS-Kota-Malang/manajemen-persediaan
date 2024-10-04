@@ -165,7 +165,7 @@ class InTransactionResource extends Resource
 
                 Forms\Components\TextInput::make('total')
                     ->label('Total')
-                    ->disabled()
+                    // ->disabled()
                     ->required()
                     ->columnSpan(3)
                     ->default(0)  // Set default value to 0
@@ -185,13 +185,14 @@ class InTransactionResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('created_at')
                     ->date('d M Y - H:i:s')
+                    ->timezone('Asia/Jakarta')  // Set timezone ke Asia/Jakarta (WIB)
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('employee.name')
                     ->label('Nama Pegawai')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('detail.product.name')
-                    ->label('buy id')
+                Tables\Columns\TextColumn::make('total')
+                    ->label('Total')
                     ->searchable(),
             ])
             ->defaultSort('updated_at', 'desc')
@@ -206,6 +207,9 @@ class InTransactionResource extends Resource
                 ->action(fn(InTransaction $record) => static::showTransactionDetails($record))
                 ->modalHeading('Detail Transaksi')
                 ->modalButton('Close')
+                ->modalContent(fn(InTransaction $record) => view('filament.components.transaction-detail-modal', [
+                    'details' => $record->inTransactionDetails,
+                ]))
                 ->form([
                     Forms\Components\TextInput::make('product.id')
                         ->label('Product ID')
@@ -234,8 +238,10 @@ class InTransactionResource extends Resource
 
     public static function showTransactionDetails(InTransaction $record)
 {
-    $transactionDetails = $record->in_transaction_details()->get();
-
+    // $transactionDetails = $record->in_transaction_details()->get();
+    return [
+        'details' => $record->inTransactionDetails()->get(),
+    ];
     //return view('filament.components.transaction-detail-modal', ['details' => $transactionDetails]);
 } 
 public static function show_Transaction_Details(InTransaction $record)

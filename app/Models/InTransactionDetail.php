@@ -99,5 +99,10 @@ class InTransactionDetail extends Model
         return $data;
     }
 
+    public function inTransactionDetails()
+    {
+        return $this->hasMany(InTransactionDetail::class);
+    }
+    
 
 }
