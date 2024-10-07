@@ -18,10 +18,10 @@ class OutTransactionResource extends Resource
 {
     protected static ?string $model = OutTransaction::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-archive-box';
     protected static ?string $navigationGroup = 'Transaction';
     protected static ?int $navigationSort = 1;
-    protected static ?string $label = 'Barang Keluar';
+    protected static ?string $label = 'OutTransaction';
 
     public static function form(Form $form): Form
     {

@@ -30,7 +30,7 @@ class InTransactionDetail extends Model
 
     public function product(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
     public function getUnits(): array
@@ -73,18 +73,15 @@ class InTransactionDetail extends Model
         });
     }
 
-    /**
-     * Mengubah data sebelum pembuatan record untuk menghitung amount.
-     */
-    public static function mutateFormDataBeforeCreate(array $data): array
+    protected static function boot()
     {
-        // Hitung amount jika belum dihitung di form
-        if (!isset($data['amount']) && isset($data['qty']) && isset($data['price'])) {
-            $data['amount'] = $data['qty'] * $data['price'];
-        }
+        parent::boot();
 
-        return $data;
+        static::saving(function ($model) {
+            $model->amount = $model->qty * $model->price; // Menghitung amount
+        });
     }
+
 
     /**
      * Mengubah data sebelum update record untuk menghitung amount.

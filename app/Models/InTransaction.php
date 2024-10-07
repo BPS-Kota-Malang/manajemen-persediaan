@@ -22,7 +22,7 @@ class InTransaction extends Model
 
     public function inTransactionDetails()
     {
-        return $this->hasMany(InTransactionDetail::class);
+        return $this->hasMany(InTransactionDetail::class, 'in_transaction_id');
     }
     
 

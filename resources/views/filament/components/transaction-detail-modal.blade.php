@@ -1,25 +1,27 @@
+<!-- resources/views/filament/components/transaction-detail-modal.blade.php -->
 <div>
-    <h2 class="text-lg font-bold">Transaction Details</h2>
-
-    <table class="table-auto w-full">
+  
+    <table style="width: 100%; border-collapse: collapse;">
         <thead>
-            <tr class="bg-gray-100">
-                <th class="px-4 py-2">Product</th>
-                <th class="px-4 py-2">Unit</th>
-                <th class="px-4 py-2">Quantity</th>
-                <th class="px-4 py-2">Price</th>
-                <th class="px-4 py-2">Amount</th>
+            <tr>
+                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">ID</th>
+                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Nama</th>
+                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Unit</th>
+                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Qty</th>
+                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Total</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($details as $detail)
+            @foreach ($details as $detail)
                 <tr>
-                    <td class="border px-4 py-2">{{ $detail->product->name }}</td>
-                    <td class="border px-4 py-2">{{ $detail->unit }}</td>
-                    <td class="border px-4 py-2">{{ $detail->qty }}</td>
-                    <td class="border px-4 py-2">{{ $detail->price }}</td>
-                    <td class="border px-4 py-2">{{ $detail->amount }}</td>
-                </tr>
+                <td style="border: 1px solid #ddd; padding: 8px;">{{ $detail->product_id }}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">
+                {{ $detail->product ? $detail->product->name : 'Produk tidak ditemukan' }}
+            </td>
+            <td style="border: 1px solid #ddd; padding: 8px;">{{ $detail->unit }}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">{{ $detail->qty }}</td>
+            <td style="border: 1px solid #ddd; padding: 8px;">{{ $detail->amount }}</td>
+        </tr>
             @endforeach
         </tbody>
     </table>

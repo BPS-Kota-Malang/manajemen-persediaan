@@ -17,10 +17,10 @@ class InTransactionResource extends Resource
 {
     protected static ?string $model = InTransaction::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-archive-box-arrow-down';
     protected static ?string $navigationGroup = 'Transaction';
     protected static ?int $navigationSort = 1;
-    protected static ?string $label = 'Barang Masuk';
+    protected static ?string $label = 'InTransaction';
 
     public static function form(Form $form): Form
     {
@@ -149,9 +149,11 @@ class InTransactionResource extends Resource
                                     ->prefix('Rp')
                                     ->disabled()
                                     ->required()
-                                    ->columnSpan(3),
-
-                            ])
+                                    ->columnSpan(3)
+                                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                        static::calculateAmountAndTotal($get, $set);
+                                    }),
+                                ])
                             ->reactive()
                             ->defaultItems(1)
                             ->columns(10)
@@ -207,24 +209,12 @@ class InTransactionResource extends Resource
                 ->action(fn(InTransaction $record) => static::showTransactionDetails($record))
                 ->modalHeading('Detail Transaksi')
                 ->modalButton('Close')
-                ->modalContent(fn(InTransaction $record) => view('filament.components.transaction-detail-modal', [
-                    'details' => $record->inTransactionDetails,
-                ]))
-                ->form([
-                    Forms\Components\TextInput::make('product.id')
-                        ->label('Product ID')
-                        ->disabled(),  // Ini digunakan untuk menampilkan teks saja tanpa bisa diedit
-                        Forms\Components\TextInput::make('unit_type')
-                        ->label('Unit')
-                        ->disabled(),
-                    Forms\Components\TextInput::make('qty')
-                        ->label('Quantity')
-                        ->disabled(),
-                    Forms\Components\TextInput::make('total')
-                        ->label('Total Transaksi')
-                        ->prefix('Rp')
-                        ->disabled(),
-    ]),
+                ->modalContent(function (InTransaction $record) {
+                    return view('filament.components.transaction-detail-modal', [
+                        'details' => $record->inTransactionDetails, // Ambil detail transaksi dari relasi
+                    ]);
+                }),
+                
 
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
@@ -237,22 +227,10 @@ class InTransactionResource extends Resource
     }
 
     public static function showTransactionDetails(InTransaction $record)
-{
-    // $transactionDetails = $record->in_transaction_details()->get();
-    return [
-        'details' => $record->inTransactionDetails()->get(),
-    ];
-    //return view('filament.components.transaction-detail-modal', ['details' => $transactionDetails]);
-} 
-public static function show_Transaction_Details(InTransaction $record)
-{
-    // Ambil semua detail transaksi yang terkait dengan transaksi ini
-    $transactionDetails = $record->in_transaction_details()->get();
-
-    // Return view dan kirimkan data detail transaksi
-    return view('filament.components.transaction-detail-modal', ['details' => $transactionDetails]);
-}
-
+    {
+        $transactionDetails = $record->inTransactionDetails()->get(); // Ambil detail transaksi dari relasi
+        return view('components.intransaction-detail-modal', ['details' => $transactionDetails]);
+    }
 
     public static function getRelations(): array
     {
@@ -294,23 +272,27 @@ public static function show_Transaction_Details(InTransaction $record)
         $set('total', $totalAmount);
     }
 
-
     public static function mutateFormDataBeforeCreate(array $data): array
     {
         // Hitung amount dan total dari detail transaksi
         foreach ($data['in_transaction_details'] as &$detail) {
             $detail['amount'] = (float) ($detail['qty'] ?? 0) * (float) ($detail['price'] ?? 0);
         }
-
+    
         // Hitung total
         $data['total'] = array_sum(array_column($data['in_transaction_details'], 'amount'));
-
+    
         // Logging untuk debugging
         \Log::info('Data before create:', $data);
-
-        return $data;
+    
+        return $data; // Kembalikan data yang sudah dimodifikasi
     }
-
+    
+    public function create()
+{
+    $data = $this->mutateFormDataBeforeCreate(request()->all());
+    InTransaction::create($data); // Ini akan otomatis menyimpan detail transaksi jika menggunakan relasi
+}
 
     public static function mutateFormDataBeforeSave(array $data): array
     {

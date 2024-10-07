@@ -18,13 +18,13 @@ class TransactionDetailModal extends Component
     public function mount($transactionId)
     {
         // Ambil data detail transaksi berdasarkan transaction_id
-        $this->details = InTransactionDetail::where('transaction_id', $transactionId)->with('product')->get();
+        // $this->details = InTransactionDetail::where('transaction_id', $transactionId)->with('product')->get();
     }
 
     public function render()
     {
-        return view('filament.components.transaction-detail-modal', [
-            'details' => $this->details,
-        ]);
+        // return view('filament.components.transaction-detail-modal', [
+        //     'details' => $this->details,
+        // ]);
     }
 }
