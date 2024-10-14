@@ -12,7 +12,7 @@ class OutTransaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'employee_id',
+        'employee_id', 'total'
     ];
 
     // Relasi ke tabel employees
@@ -22,8 +22,15 @@ class OutTransaction extends Model
     }
 
     // Tambahkan relasi hasMany ke buy_items
-    public function out_transaction_detail(): HasMany
+    public function outTransactionDetails(): HasMany
     {
-        return $this->hasMany(OutTransactionDetail::class);
+        return $this->hasMany(OutTransactionDetail::class, 'out_transaction_id');
     }
+
+    public function getTotalAmountAttribute()
+    {
+        return $this->out_transaction_detail()->sum('amount'); // Hitung total amount dari detail
+    }
+    
 }
+

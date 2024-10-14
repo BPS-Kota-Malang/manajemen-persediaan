@@ -210,7 +210,7 @@ class InTransactionResource extends Resource
                 ->modalHeading('Detail Transaksi')
                 ->modalButton('Close')
                 ->modalContent(function (InTransaction $record) {
-                    return view('filament.components.transaction-detail-modal', [
+                    return view('filament.components.intransaction-detail-modal', [
                         'details' => $record->inTransactionDetails, // Ambil detail transaksi dari relasi
                     ]);
                 }),
@@ -228,8 +228,8 @@ class InTransactionResource extends Resource
 
     public static function showTransactionDetails(InTransaction $record)
     {
-        $transactionDetails = $record->inTransactionDetails()->get(); // Ambil detail transaksi dari relasi
-        return view('components.intransaction-detail-modal', ['details' => $transactionDetails]);
+        $inTransactionDetails = $record->inTransactionDetails()->get(); // Ambil detail transaksi dari relasi
+        return view('components.intransaction-detail-modal', ['details' => $inTransactionDetails]);
     }
 
     public static function getRelations(): array

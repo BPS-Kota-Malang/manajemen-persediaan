@@ -16,9 +16,10 @@ return new class extends Migration
             $table->foreignId('out_transaction_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
             $table->integer('qty');
-            $table->integer('unit');
+            $table->string('unit');
+            $table->integer('qty_in_pcs')->default(0);
             $table->decimal('price');
-            $table->decimal('amount');
+            $table->decimal('amount')->default(0);
             $table->timestamps();
         });
     }

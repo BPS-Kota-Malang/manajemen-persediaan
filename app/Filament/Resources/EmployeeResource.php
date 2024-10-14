@@ -23,7 +23,6 @@ class EmployeeResource extends Resource
     {
         return $form
             ->schema([
-                //
                 Forms\Components\TextInput::make('nip')
                     ->label('Nomor Induk Pegawai')
                     ->numeric()
@@ -58,8 +57,40 @@ class EmployeeResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                //
+        ->columns([
+            // Kolom yang ditampilkan di tabel list
+            Tables\Columns\TextColumn::make('nip')
+                ->label('Nomor Induk Pegawai')
+                ->sortable()
+                ->searchable(),
+
+            Tables\Columns\TextColumn::make('name')
+                ->label('Nama Pegawai')
+                ->sortable()
+                ->searchable(),
+
+            Tables\Columns\TextColumn::make('no_handphone')
+                ->label('Nomor Handphone')
+                ->sortable()
+                ->searchable(),
+
+            // Menampilkan relasi `user.name`
+            Tables\Columns\TextColumn::make('user.name')
+                ->label('Akun Pegawai')
+                ->sortable()
+                ->searchable(),
+
+            // Menampilkan relasi `jabatan.name`
+            Tables\Columns\TextColumn::make('jabatan.name')
+                ->label('Jabatan')
+                ->sortable()
+                ->searchable(),
+
+            // Menampilkan relasi `team.name`
+            Tables\Columns\TextColumn::make('team.name')
+                ->label('Tim')
+                ->sortable()
+                ->searchable(),
             ])
             ->filters([
                 //

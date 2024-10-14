@@ -10,6 +10,10 @@ class Employee extends Model
 {
     use HasFactory;
     
+    protected $fillable = [
+        'nip','name','no_handphone','user_id','jabatan_id','team_id'
+    ];
+
     public function jabatan(): BelongsTo
     {
         return $this->belongsTo(Jabatan::class);
@@ -17,11 +21,11 @@ class Employee extends Model
  
     public function team(): BelongsTo
     {
-        return $this->belongsTo(team::class);
+        return $this->belongsTo(Team::class);
     }
 
-    public function buy(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Buy::class);
+        return $this->belongsTo(User::class);
     }
 }
