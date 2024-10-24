@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OutTransactionDetail extends Model
 {
@@ -13,7 +14,7 @@ class OutTransactionDetail extends Model
     protected $with = ['product'];
 
     protected $fillable = [
-        'out_transaction_id',
+        'in_transaction_id',
         'product_id',
         'qty',
         'price',
@@ -22,7 +23,7 @@ class OutTransactionDetail extends Model
         'amount'
     ];
 
-    public function OutTransaction(): BelongsTo
+    public function outTransaction(): BelongsTo
     {
         return $this->belongsTo(OutTransaction::class);
     }
@@ -45,20 +46,6 @@ class OutTransactionDetail extends Model
         return $this->product->conversion_rate ?? 10; // Mengembalikan 1 jika tidak ada produk
     }
 
-
-    // protected static function booted()
-    // {
-    //     static::created(function ($buyItem) {
-    //         // Cari produk berdasarkan product_id
-    //         $product = Product::find($buyItem->product_id);
-
-    //         if ($product) {
-    //             // Tambahkan quantity ke stok produk
-    //             $product->stok -= $buyItem->qty;
-    //             $product->save();
-    //         }
-    //     });
-    // }
     protected static function booted()
     {
         static::created(function ($outDetail) {
@@ -80,9 +67,39 @@ class OutTransactionDetail extends Model
                 $outDetail->save(); // Simpan perubahan ke inDetail
 
                 // Update stok produk
-                $product->stok -= $qtyInPcs;
+                $product->stok += $qtyInPcs;
                 $product->save();
             }
         });
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($model) {
+            $model->amount = $model->qty * $model->price; // Menghitung amount
+        });
+    }
+
+
+    /**
+     * Mengubah data sebelum update record untuk menghitung amount.
+     */
+    public static function mutateFormDataBeforeSave(array $data): array
+    {
+        // Sama seperti pada create, pastikan amount dihitung
+        if (!isset($data['amount']) && isset($data['qty']) && isset($data['price'])) {
+            $data['amount'] = $data['qty'] * $data['price'];
+        }
+
+        return $data;
+    }
+
+    public function outTransactionDetails()
+    {
+        return $this->hasMany(OutTransactionDetail::class);
+    }
+    
+
 }

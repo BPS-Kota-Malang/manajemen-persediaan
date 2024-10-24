@@ -1,6 +1,5 @@
 <!-- resources/views/filament/components/transaction-detail-modal.blade.php -->
 <div>
-  
     <table style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr>
@@ -12,16 +11,16 @@
             </tr>
         </thead>
         <tbody>
-        @foreach ($details as $detail)
+            @foreach ($details as $detail)
                 <tr>
-                <td style="border: 1px solid #ddd; padding: 8px;">{{ $detail->product_id }}</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">
-                {{ $detail->product ? $detail->product->name : 'Produk tidak ditemukan' }}
-            </td>
-            <td style="border: 1px solid #ddd; padding: 8px;">{{ $detail->unit }}</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">{{ $detail->qty }}</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">{{ $detail->amount }}</td>
-        </tr>
+                    <td style="border: 1px solid #ddd; padding: 8px;">{{ $detail->product_id }}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">
+                        {{ $detail->product ? $detail->product->name : 'Produk tidak ditemukan' }}
+                    </td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">{{ $detail->unit }}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">{{ $detail->qty }}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">Rp {{ number_format($detail->amount, 0, ',', '.') }}</td>
+                </tr>
             @endforeach
         </tbody>
     </table>
