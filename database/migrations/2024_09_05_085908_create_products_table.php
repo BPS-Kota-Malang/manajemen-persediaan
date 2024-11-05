@@ -21,7 +21,7 @@ return new class extends Migration
             $table->enum('unit_1', ['box', 'pack']); // Opsi untuk unit_1
             $table->enum('unit_2', ['pcs', 'rim']); // Opsi untuk unit_2
             $table->integer('conversion_rate')->default(12); // Default 1 berarti 1 pcs
-            $table->integer('stok')->default(0);
+            // $table->integer('stok')->default(0);
             //$table->foreignId('unit_id')->constrained('units')->cascadeOnDelete();
             $table->timestamps();
         });
