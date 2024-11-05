@@ -42,10 +42,10 @@ class ProductResource extends Resource
             ->relationship('brand', 'name')
             ->required(),
 
-        Forms\Components\TextInput::make('stok')
-            ->label('Stok')
-            ->numeric()
-            ->required(),
+        // Forms\Components\TextInput::make('stok')
+        //     ->label('Stok')
+        //     ->numeric()
+        //     ->required(),
 
             Forms\Components\Select::make('unit_1')
             ->label('Satuan 1')
@@ -94,7 +94,7 @@ public static function form(Form $form): Form
                 ->searchable(),
                 Tables\Columns\TextColumn::make('brand.name')
                 ->searchable(),
-                Tables\Columns\TextColumn::make('stok')
+                Tables\Columns\TextColumn::make('stok') // ini nanti ngambil dari table stock
                 ->searchable(),
                 Tables\Columns\TextColumn::make('unit_1')
                 ->searchable(),
