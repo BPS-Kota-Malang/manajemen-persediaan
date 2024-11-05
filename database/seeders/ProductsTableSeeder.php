@@ -24,7 +24,7 @@ class ProductsTableSeeder extends Seeder
             'unit_2' => 'pcs',
             //'unit_id' => 1,
             'conversion_rate' => 12,
-            'stok' => '12'
+            //'stok' => '12'
             
             ],
 
@@ -37,20 +37,20 @@ class ProductsTableSeeder extends Seeder
             'unit_2' => 'rim',
             //'unit_id' => 1,
             'conversion_rate' => 500,
-            'stok' => '50',
+            //'stok' => '50',
             ],
 
             ['code' => 'P0003', 
             'name' => 'Correction Pen',
             // 'price' => '3000',
-            'stok' => '12',
+           // 'stok' => '12',
             'category_id' => 1,
             'brand_id' => 2,
             'unit_1' => 'pack',
             'unit_2' => 'pcs',
             //'unit_id' => 1,
             'conversion_rate' => 12,
-            'stok' => '12'
+            //'stok' => '12'
             ],
 
 
@@ -63,7 +63,7 @@ class ProductsTableSeeder extends Seeder
             'unit_2' => 'pcs',
             //'unit_id' => 1,
             'conversion_rate' => 10,
-            'stok' => '6',
+            //'stok' => '6',
             ],
 
             ['code' => 'P0005', 
@@ -75,7 +75,7 @@ class ProductsTableSeeder extends Seeder
             'unit_2' => 'pcs',
             //'unit_id' => 1,
             'conversion_rate' => 12,
-            'stok' => '3',
+            //'stok' => '3',
             ],
         ]);
     }

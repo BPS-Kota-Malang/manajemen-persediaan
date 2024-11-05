@@ -1,0 +1,1 @@
+<img src="{{ asset('/images/logobps1.png') }}" alt="logo" class="h-10">
