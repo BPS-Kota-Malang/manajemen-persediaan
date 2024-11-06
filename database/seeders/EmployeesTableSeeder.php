@@ -15,16 +15,7 @@ class EmployeesTableSeeder extends Seeder
     {
         //
         DB::table('employees')->insert([
-            [
-                'nip' => '123456231225',
-                'name' => 'Dina Ayu',
-                'no_handphone' => '081234522518',
-                'user_id' => 1, // Sesuaikan dengan ID user yang ada
-                'jabatan_id' => 1, // Sesuaikan dengan ID jabatan yang ada
-                'team_id' => 1, // Sesuaikan dengan ID team yang ada
-                // 'created_at' => now(),
-                // 'updated_at' => now(),
-            ],
+            
             [
                 'nip' => '654321231224',
                 'name' => 'Adelia',

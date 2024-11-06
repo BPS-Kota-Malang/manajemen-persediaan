@@ -12,7 +12,7 @@ class InTransaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'employee_id', 'total'
+        'employee_id', 'total', 'date'
     ];
 
     public function employee(): BelongsTo

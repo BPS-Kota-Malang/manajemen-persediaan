@@ -45,9 +45,10 @@ class OutTransactionResource extends Resource
                                     ->afterStateUpdated(function ($state, callable $set) {
                                         $product = Product::find($state);
                                         if ($product) {
-                                            $set('price', $product->sell_price);
+                                            $set('total_stock', $product->total_stock); // Set total stock of the product
                                         } else {
-                                            $set('price', 0); // Set to 0 if no product is found
+
+                                            $set('total_stock', 0);
                                         }
                                     })
                                     ->getSearchResultsUsing(
@@ -73,9 +74,52 @@ class OutTransactionResource extends Resource
                                         }
                                         return [];
                                     })
-                                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                    ->afterStateUpdated(function (callable $set, callable $get) {
+                                        $state = $get('qty'); // Dapatkan qty saat ini
+                                        $product = Product::find($get('product_id'));
+
+                                        if ($product) {
+                                            $conversionRate = $product->conversion_rate;
+
+                                            if ($get('unit') === $product->unit_1) {
+                                                $qtyInPcs = $state * $conversionRate;
+                                            } elseif ($get('unit') === $product->unit_2) {
+                                                $qtyInPcs = $state;
+                                            } else {
+                                                $qtyInPcs = 0; // Default ke 0 jika unit tidak valid
+                                            }
+
+                                            $set('qty_in_pcs', $qtyInPcs); // Set nilai qty_in_pcs
+                                        }
+
+                                        // Recalculate amount and total
+                                        //static::calculateAmountAndTotal($get, $set);
+                                    })
+                                    ->required()
+                                    ->columnSpan(2),
+
+                                Forms\Components\TextInput::make('qty')
+                                    ->label('Quantity')
+                                    ->reactive()
+                                    ->required()
+                                    ->minValue(1)
+                                    ->default(1)
+                                    ->columnSpan(2),
+
+                                Forms\Components\TextInput::make('total_stock')
+                                    ->label('Total Stock')
+                                    ->disabled()
+                                    ->columnSpan(3),
+
+                                Forms\Components\TextInput::make('qty_in_pcs')
+                                    ->label('Quantity in Pcs')
+                                    ->disabled()
+                                    ->required()
+                                    ->columnSpan(3)
+                                    ->afterStateUpdated(function (callable $set, callable $get) {
                                         $qty = $get('qty');
                                         $product = Product::find($get('product_id'));
+
                                         if ($product) {
                                             $conversionRate = $product->conversion_rate;
 
@@ -84,137 +128,85 @@ class OutTransactionResource extends Resource
                                             } elseif ($get('unit') === $product->unit_2) {
                                                 $qtyInPcs = $qty;
                                             } else {
-                                                $qtyInPcs = 0;
+                                                $qtyInPcs = 0; // Default to 0 if no valid unit
                                             }
 
-                                            $set('qty_in_pcs', $qtyInPcs);
+                                            $set('qty_in_pcs', $qtyInPcs); // Set the quantity in pcs
                                         }
-
-                                        // Recalculate amount and total
-                                        static::calculateAmountAndTotal($get, $set);
                                     })
-                                    ->required()
-                                    ->columnSpan(2),
-
-                                Forms\Components\TextInput::make('qty')
-                                    ->label('Quantity')
-                                    ->reactive()
-                                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                        $product = Product::find($get('product_id'));
-                                        $unitType = $get('unit');
-
-                                        if ($product) {
-                                            $conversionRate = $product->conversion_rate;
-
-                                            if ($unitType === $product->unit_1) {
-                                                $qtyInPcs = $state * $conversionRate;
-                                            } elseif ($unitType === $product->unit_2) {
-                                                $qtyInPcs = $state;
-                                            } else {
-                                                $qtyInPcs = 0;
-                                            }
-
-                                            $set('qty_in_pcs', $qtyInPcs);
-                                        }
-
-                                        // Recalculate amount and total
-                                        static::calculateAmountAndTotal($get, $set);
-                                    })
-                                    ->minValue(1)
-                                    ->default(1)
-                                    ->required()
-                                    ->columnSpan(2),
-
-                                Forms\Components\TextInput::make('qty_in_pcs')
-                                    ->label('Quantity in Pcs')
-                                    ->disabled()
                                     ->required()
                                     ->columnSpan(3),
 
-                                Forms\Components\TextInput::make('price')
-                                    ->label('Harga')
-                                    ->prefix('Rp')
-                                    ->required()
-                                    ->reactive()
-                                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                        // Recalculate amount whenever price changes
-                                        static::calculateAmountAndTotal($get, $set);
-                                    })
-                                    ->columnSpan(3),
 
-                                Forms\Components\TextInput::make('amount')
-                                    ->label('Amount')
-                                    ->prefix('Rp')
-                                    ->disabled() // Disabled to avoid manual input
-                                    ->required()
-                                    ->columnSpan(3),
+
                             ])
                             ->reactive()
                             ->defaultItems(1)
                             ->columns(10)
                             ->columnSpan('full')
-                            ->label('')
-                            ->afterStateUpdated(function (callable $get, callable $set) {
-                                static::calculateAmountAndTotal($get, $set);
-                            }),
+                            ->label(''),
                     ])
                     ->collapsible(),
-
-                Forms\Components\TextInput::make('total')
-                    ->label('Total')
-                    ->required()
-                    ->columnSpan(3)
-                    ->default(0)
-                    ->reactive()
-                    ->afterStateUpdated(function (callable $get, callable $set) {
-                        static::calculateAmountAndTotal($get, $set);
-                    })
-                    ->columnSpan(2),
             ])
             ->columns(12);
     }
 
-    public static function calculateAmountAndTotal(callable $get, callable $set): void
-    {
-        $outDetails = $get('out_transaction_details') ?? [];
-        $totalAmount = 0;
-
-        foreach ($outDetails as $index => $detail) {
-            $qty = (float) ($detail['qty'] ?? 0);
-            $price = (float) ($detail['price'] ?? 0);
-            $amount = $qty * $price;
-
-            // Update amount untuk setiap item
-            $outDetails[$index]['amount'] = $amount;
-            $totalAmount += $amount;
-        }
-
-        // Update Repeater dengan nilai amount yang baru
-        $set('out_transaction_details', $outDetails);
-        // Update kolom total dengan jumlah keseluruhan
-        $set('total', $totalAmount);
-    }
-
     public static function mutateFormDataBeforeCreate(array $data): array
     {
+        dd($data); // Debug data untuk melihat apakah masih ada referensi ke 'amount'
         foreach ($data['out_transaction_details'] as &$out_detail) {
             $product = Product::find($out_detail['product_id']);
             if ($product) {
                 $out_detail['qty_in_pcs'] = (float) ($out_detail['qty'] ?? 0) * (float) $product->conversion_rate;
-                $out_detail['amount'] = (float) ($out_detail['qty'] ?? 0) * (float) ($out_detail['price'] ?? 0);
             } else {
-                $out_detail['qty_in_pcs'] = 0; // Atur ke 0 jika produk tidak ditemukan
-                $out_detail['amount'] = 0; // Atur ke 0 jika produk tidak ditemukan
+                $out_detail['qty_in_pcs'] = 0;
             }
         }
 
-        // Hitung total
-        $data['total'] = array_sum(array_column($data['out_transaction_details'], 'amount'));
-
-        \Log::info('Data sebelum disimpan ke database:', $data); // Log untuk memeriksa data
-
         return $data;
     }
+
+
+    public static function afterSave(OutTransaction $transaction): void
+    {
+        foreach ($transaction->outTransactionDetails as $detail) {
+            $productId = $detail->product_id;
+            $qtyInPcs = $detail->qty_in_pcs;
+
+            // Call the method to reduce stock from oldest entries
+            self::reduceStock($qtyInPcs, $productId);
+        }
+    }
+
+    public static function reduceStock($qtyInPcs, $productId)
+    {
+        // Get the oldest stock entries for the specified product ID
+        $stockEntries = Stock::where('product_id', $productId)
+            ->orderBy('date')  // Assumption: older stock entries are used first
+            ->get();
+
+        foreach ($stockEntries as $stock) {
+            if ($qtyInPcs <= 0) break;
+
+            // Deduct stock if the quantity in this stock entry is less than or equal to the required quantity
+            if ($stock->qty <= $qtyInPcs) {
+                $qtyInPcs -= $stock->qty;
+                $stock->qty = 0; // Mark this stock entry as fully used
+                $stock->save();  // Save the changes to the stock entry
+            } else {
+                // Deduct partially from this stock entry
+                $stock->qty -= $qtyInPcs;
+                $qtyInPcs = 0;  // All quantity has been deducted
+                $stock->save();  // Save the changes to the stock entry
+            }
+        }
+
+        // If qtyInPcs is still greater than 0, it means there was not enough stock
+        if ($qtyInPcs > 0) {
+            \Log::warning("Insufficient stock to fulfill request for product ID {$productId}. Remaining qty needed: {$qtyInPcs}");
+        }
+    }
+
 
     public static function table(Table $table): Table
     {
@@ -227,9 +219,6 @@ class OutTransactionResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('employee.name')
                     ->label('Nama Pegawai')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('total')
-                    ->label('Total')
                     ->searchable(),
             ])
             ->defaultSort('updated_at', 'desc')
@@ -257,9 +246,7 @@ class OutTransactionResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
@@ -268,6 +255,6 @@ class OutTransactionResource extends Resource
             'index' => Pages\ListOutTransactions::route('/'),
             'create' => Pages\CreateOutTransaction::route('/create'),
             'edit' => Pages\EditOutTransaction::route('/{record}/edit'),
-  ];
-}
+        ];
+    }
 }

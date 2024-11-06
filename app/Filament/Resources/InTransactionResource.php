@@ -11,7 +11,9 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
 
 class InTransactionResource extends Resource
 {
@@ -34,6 +36,12 @@ class InTransactionResource extends Resource
                             ->required(),
                     ])
                     ->columnSpan(4),
+
+                Forms\Components\DatePicker::make('date') // Input untuk tanggal
+                    ->label('Tanggal')
+                    ->required()
+                    ->default(now()) // Set default date to now
+                    ->columnSpan(3), // Menentukan lebar kolom jika diperlukan
 
                 Forms\Components\Section::make('Barang Masuk')
                     ->schema([
@@ -60,7 +68,7 @@ class InTransactionResource extends Resource
                                     ->required()
                                     ->columnSpan(5),
 
-                                    Forms\Components\Select::make('unit')
+                                Forms\Components\Select::make('unit')
                                     ->label('Satuan')
                                     ->reactive()
                                     ->options(function (callable $get) {
@@ -74,13 +82,12 @@ class InTransactionResource extends Resource
                                         return [];
                                     })
                                     ->afterStateUpdated(function (callable $set, callable $get) {
-                                        // Memanggil kembali perhitungan qty_in_pcs ketika unit diubah
                                         $state = $get('qty'); // Dapatkan qty saat ini
                                         $product = Product::find($get('product_id'));
-                                        
+
                                         if ($product) {
                                             $conversionRate = $product->conversion_rate;
-                                
+
                                             if ($get('unit') === $product->unit_1) {
                                                 $qtyInPcs = $state * $conversionRate;
                                             } elseif ($get('unit') === $product->unit_2) {
@@ -88,27 +95,27 @@ class InTransactionResource extends Resource
                                             } else {
                                                 $qtyInPcs = 0; // Default ke 0 jika unit tidak valid
                                             }
-                                
+
                                             $set('qty_in_pcs', $qtyInPcs); // Set nilai qty_in_pcs
                                         }
-                                
+
                                         // Recalculate amount and total
                                         static::calculateAmountAndTotal($get, $set);
                                     })
                                     ->required()
                                     ->columnSpan(2),
 
-                                    Forms\Components\TextInput::make('qty')
+                                Forms\Components\TextInput::make('qty')
                                     ->label('Quantity')
                                     ->reactive()
                                     ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                         // Memanggil fungsi untuk menghitung qty_in_pcs setiap kali qty diubah
                                         $product = Product::find($get('product_id'));
                                         $unitType = $get('unit');
-                                
+
                                         if ($product) {
                                             $conversionRate = $product->conversion_rate;
-                                
+
                                             if ($unitType === $product->unit_1) {
                                                 // Jika unit_1 dipilih, konversi qty ke pcs
                                                 $qtyInPcs = $state * $conversionRate; // Konversi qty ke pcs
@@ -118,10 +125,10 @@ class InTransactionResource extends Resource
                                             } else {
                                                 $qtyInPcs = 0; // Default ke 0 jika unit tidak valid
                                             }
-                                
+
                                             $set('qty_in_pcs', $qtyInPcs); // Set nilai qty_in_pcs
                                         }
-                                
+
                                         // Recalculate amount and total
                                         static::calculateAmountAndTotal($get, $set);
                                     })
@@ -130,12 +137,19 @@ class InTransactionResource extends Resource
                                     ->required()
                                     ->columnSpan(2),
 
-                                Forms\Components\TextInput::make('qty_in_pcs')
-                                    ->label('Quantity in Pcs')
-                                    ->disabled()
-                                    ->required()
-                                    ->columnSpan(3),
+                                // Hapus bagian input untuk qty_in_pcs jika tidak ingin ditampilkan
+                                // Forms\Components\TextInput::make('qty_in_pcs')
+                                //     ->label('Quantity in Pcs')
+                                //     ->disabled()
+                                //     ->required()
+                                //     ->columnSpan(3),
 
+                                Forms\Components\TextInput::make('qty_in_pcs')
+                                ->label('Quantity in Pcs')
+                                ->disabled()
+                                ->required()
+                                ->columnSpan(3),
+                                
                                 Forms\Components\TextInput::make('price')
                                     ->prefix('Rp')
                                     ->required()
@@ -153,7 +167,7 @@ class InTransactionResource extends Resource
                                     ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                         static::calculateAmountAndTotal($get, $set);
                                     }),
-                                ])
+                            ])
                             ->reactive()
                             ->defaultItems(1)
                             ->columns(10)
@@ -167,7 +181,6 @@ class InTransactionResource extends Resource
 
                 Forms\Components\TextInput::make('total')
                     ->label('Total')
-                    // ->disabled()
                     ->required()
                     ->columnSpan(3)
                     ->default(0)  // Set default value to 0
@@ -176,17 +189,17 @@ class InTransactionResource extends Resource
                         static::calculateAmountAndTotal($get, $set);
                     })
                     ->columnSpan(2),
-
             ])
             ->columns(12);
     }
+
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('created_at')
-                    ->date('d M Y - H:i:s')
+                Tables\Columns\TextColumn::make('date')
+                    ->date('d M Y')
                     ->timezone('Asia/Jakarta')  // Set timezone ke Asia/Jakarta (WIB)
                     ->sortable()
                     ->searchable(),
@@ -203,18 +216,18 @@ class InTransactionResource extends Resource
             ])
             ->actions([
                 Tables\Actions\Action::make('detail')
-                ->label('Detail')
-                ->icon('heroicon-o-magnifying-glass')
-                ->extraAttributes(['class' => 'custom-icon'])
-                ->action(fn(InTransaction $record) => static::showTransactionDetails($record))
-                ->modalHeading('Detail Transaksi')
-                ->modalButton('Close')
-                ->modalContent(function (InTransaction $record) {
-                    return view('filament.components.intransaction-detail-modal', [
-                        'details' => $record->inTransactionDetails, // Ambil detail transaksi dari relasi
-                    ]);
-                }),
-                
+                    ->label('Detail')
+                    ->icon('heroicon-o-magnifying-glass')
+                    ->extraAttributes(['class' => 'custom-icon'])
+                    ->action(fn(InTransaction $record) => static::showTransactionDetails($record))
+                    ->modalHeading('Detail Transaksi')
+                    ->modalButton('Close')
+                    ->modalContent(function (InTransaction $record) {
+                        return view('filament.components.intransaction-detail-modal', [
+                            'details' => $record->inTransactionDetails, // Ambil detail transaksi dari relasi
+                        ]);
+                    }),
+
 
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
@@ -272,32 +285,35 @@ class InTransactionResource extends Resource
         $set('total', $totalAmount);
     }
 
+    public function create()
+    {
+        $data = $this->mutateFormDataBeforeCreate(request()->all());
+        InTransaction::create($data); // Ini akan otomatis menyimpan detail transaksi jika menggunakan relasi
+    }
+
     public static function mutateFormDataBeforeCreate(array $data): array
     {
         // Hitung amount dan total dari detail transaksi
         foreach ($data['in_transaction_details'] as &$detail) {
             $detail['amount'] = (float) ($detail['qty'] ?? 0) * (float) ($detail['price'] ?? 0);
+            $detail['date'] = $data['date']; // Menambahkan date ke detail
         }
-    
+
         // Hitung total
         $data['total'] = array_sum(array_column($data['in_transaction_details'], 'amount'));
-    
+
         // Logging untuk debugging
         \Log::info('Data before create:', $data);
-    
+
         return $data; // Kembalikan data yang sudah dimodifikasi
-    }
-    
-    public function create()
-{
-    $data = $this->mutateFormDataBeforeCreate(request()->all());
-    InTransaction::create($data); // Ini akan otomatis menyimpan detail transaksi jika menggunakan relasi
-}
+    } 
+
 
     public static function mutateFormDataBeforeSave(array $data): array
     {
         // Hitung amount dan total dari detail transaksi
         foreach ($data['in_transaction_details'] as &$detail) {
+            $detail['date'] = $data['date']; // Mengatur date untuk setiap detail
             // Hitung amount berdasarkan qty dan price
             $detail['amount'] = (float) ($detail['qty'] ?? 0) * (float) ($detail['price'] ?? 0);
         }
@@ -307,5 +323,4 @@ class InTransactionResource extends Resource
 
         return $data;
     }
-
 }

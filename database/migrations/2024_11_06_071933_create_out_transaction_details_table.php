@@ -12,8 +12,6 @@ class CreateOutTransactionDetailsTable extends Migration
             $table->id();
             $table->foreignId('out_transaction_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->decimal('price', 10, 2); // pastikan ini ada
-            $table->decimal('amount', 10, 2)->nullable()->default(0); // pastikan ini ada dan nullable
             $table->integer('qty');
             $table->integer('qty_in_pcs')->nullable();
             $table->string('unit');

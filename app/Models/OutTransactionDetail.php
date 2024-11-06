@@ -17,10 +17,8 @@ class OutTransactionDetail extends Model
         'in_transaction_id',
         'product_id',
         'qty',
-        'price',
         'unit',
         'qty_in_pcs',
-        'amount'
     ];
 
     public function outTransaction(): BelongsTo
@@ -60,15 +58,15 @@ class OutTransactionDetail extends Model
                 // Jika unit_1 dipilih, konversi qty ke pcs
                 if ($unitType === $product->unit_1) {
                     $qtyInPcs *= $outDetail->getConversionRate(); // Konversi ke pcs menggunakan conversion rate
-                }
+                }                
 
                 // Update qty_in_pcs dan stok produk
                 $outDetail->qty_in_pcs = $qtyInPcs; // Simpan qty_in_pcs
                 $outDetail->save(); // Simpan perubahan ke inDetail
 
-                // Update stok produk
-                $product->stok += $qtyInPcs;
-                $product->save();
+                // // Update stok produk
+                // $product->stok += $qtyInPcs;
+                // $product->save();
             }
         });
     }
@@ -77,10 +75,29 @@ class OutTransactionDetail extends Model
     {
         parent::boot();
 
-        static::saving(function ($model) {
-            $model->amount = $model->qty * $model->price; // Menghitung amount
+        static::created(function ($outDetail) {
+            $product = $outDetail->product;
+
+            if ($product) {
+                $unitType = $outDetail->unit;
+                $qtyInPcs = $outDetail->qty; // Default qtyInPcs
+
+                // If unit_1 is selected, convert qty to pcs
+                if ($unitType === $product->unit_1) {
+                    $qtyInPcs *= $outDetail->getConversionRate(); // Convert to pcs using conversion rate
+                }
+
+                // Update qty_in_pcs and save it
+                $outDetail->qty_in_pcs = $qtyInPcs;
+                $outDetail->save();
+
+                // Call the function to reduce stock
+                self::reduceStock($qtyInPcs, $outDetail->product_id);
+            }
         });
     }
+
+
 
 
     /**
@@ -88,10 +105,10 @@ class OutTransactionDetail extends Model
      */
     public static function mutateFormDataBeforeSave(array $data): array
     {
-        // Sama seperti pada create, pastikan amount dihitung
-        if (!isset($data['amount']) && isset($data['qty']) && isset($data['price'])) {
-            $data['amount'] = $data['qty'] * $data['price'];
-        }
+        // // Sama seperti pada create, pastikan amount dihitung
+        // if (!isset($data['amount']) && isset($data['qty']) && isset($data['price'])) {
+        //     $data['amount'] = $data['qty'] * $data['price'];
+        // }
 
         return $data;
     }
@@ -100,6 +117,33 @@ class OutTransactionDetail extends Model
     {
         return $this->hasMany(OutTransactionDetail::class);
     }
-    
 
+    public static function reduceStock($qtyInPcs, $productId)
+    {
+        // Dapatkan stok yang relevan dari tabel stock berdasarkan product_id
+        $stockEntries = Stock::where('product_id', $productId)
+            ->orderBy('date')  // Asumsi stok lebih dulu dari yang lama
+            ->get();
+
+        foreach ($stockEntries as $stock) {
+            if ($qtyInPcs <= 0) break;
+
+            if ($stock->qty <= $qtyInPcs) {
+                // Deduct full quantity from this entry and update the remainder
+                $qtyInPcs -= $stock->qty;
+                $stock->qty = 0;
+                $stock->save(); // Simpan perubahan stok
+            } else {
+                // Only partially deduct from this stock entry
+                $stock->qty -= $qtyInPcs;
+                $qtyInPcs = 0;
+                $stock->save(); // Simpan perubahan stok
+            }
+        }
+
+        if ($qtyInPcs > 0) {
+            // Log warning jika stok tidak cukup
+            \Log::warning("Insufficient stock to fulfill request for product ID {$productId}. Remaining qty needed: {$qtyInPcs}");
+        }
+    }
 }

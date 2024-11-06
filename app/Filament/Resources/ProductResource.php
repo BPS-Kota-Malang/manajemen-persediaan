@@ -94,8 +94,9 @@ public static function form(Form $form): Form
                 ->searchable(),
                 Tables\Columns\TextColumn::make('brand.name')
                 ->searchable(),
-                Tables\Columns\TextColumn::make('stok') // ini nanti ngambil dari table stock
-                ->searchable(),
+                Tables\Columns\TextColumn::make('total_stock') // ini nanti ngambil dari table stock
+                ->label('Total Stok')
+                ->getStateUsing(fn ($record) => $record->stocks->sum('qty')),
                 Tables\Columns\TextColumn::make('unit_1')
                 ->searchable(),
                 Tables\Columns\TextColumn::make('unit_2')
