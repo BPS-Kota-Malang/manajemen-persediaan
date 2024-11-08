@@ -7,7 +7,7 @@
                 <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Nama</th>
                 <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Unit</th>
                 <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Qty</th>
-                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Total</th>
+                {{-- <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Total</th> --}}
             </tr>
         </thead>
         <tbody>
@@ -19,7 +19,7 @@
                     </td>
                     <td style="border: 1px solid #ddd; padding: 8px;">{{ $detail->unit }}</td>
                     <td style="border: 1px solid #ddd; padding: 8px;">{{ $detail->qty }}</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">Rp {{ number_format($detail->amount, 0, ',', '.') }}</td>
+                    {{-- <td style="border: 1px solid #ddd; padding: 8px;">Rp {{ number_format($detail->amount, 0, ',', '.') }}</td> --}}
                 </tr>
             @endforeach
         </tbody>

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('out_transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete();
-            $table->integer('total')->default(0);
+            //  
             $table->timestamps();
         });
     }

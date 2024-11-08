@@ -41,25 +41,43 @@ class OutTransactionResource extends Resource
                                 Forms\Components\Select::make('product_id')
                                     ->label('Product')
                                     ->relationship('product', 'name')
+                                    ->options(
+                                        Product::whereHas('stocks', fn($query) => $query->where('qty', '>', 0))
+                                            ->pluck('name', 'id')
+                                    )
                                     ->reactive()
                                     ->afterStateUpdated(function ($state, callable $set) {
                                         $product = Product::find($state);
-                                        if ($product) {
-                                            $set('total_stock', $product->total_stock); // Set total stock of the product
-                                        } else {
-
-                                            $set('total_stock', 0);
-                                        }
+                                        $set('total_stock', $product ? $product->total_stock : 0); // Set total stock of the product
                                     })
-                                    ->getSearchResultsUsing(
-                                        fn(string $search) => Product::where('stok', '>', 0)
-                                            ->where('name', 'like', "%{$search}%")
-                                            ->limit(25)
-                                            ->pluck('name', 'id')
-                                    )
-                                    ->getOptionLabelUsing(fn($value): ?string => Product::find($value)?->name)
                                     ->required()
                                     ->columnSpan(5),
+
+                                // Forms\Components\Select::make('product_id')
+                                //     ->label('Product')
+                                //     ->relationship('product', 'name')
+                                //     ->reactive()
+                                //     ->afterStateUpdated(function ($state, callable $set) {
+                                //         $product = Product::find($state);
+                                //         if ($product) {
+                                //             $set('total_stock', $product->total_stock); // Set total stock of the product
+                                //         } else {
+
+                                //             $set('total_stock', 0);
+                                //         }
+                                //     })
+                                //     ->getSearchResultsUsing(
+                                //         fn(string $search) => Product::whereHas('stocks', function($query) {
+                                //             $query->havingRaw('SUM(qty) > 0'); // Filter products with total stock > 0
+                                //         })
+                                //         // fn(string $search) => Product::where('stok', '>', 0)
+                                //             ->where('name', 'like', "%{$search}%")
+                                //             ->limit(25)
+                                //             ->pluck('name', 'id')
+                                //     )
+                                //     ->getOptionLabelUsing(fn($value): ?string => Product::find($value)?->name)
+                                //     ->required()
+                                //     ->columnSpan(5),
 
                                 Forms\Components\Select::make('unit')
                                     ->label('Satuan')
@@ -103,8 +121,29 @@ class OutTransactionResource extends Resource
                                     ->reactive()
                                     ->required()
                                     ->minValue(1)
-                                    ->default(1)
-                                    ->columnSpan(2),
+                                    ->columnSpan(2)
+                                    ->helperText('Masukkan qty tidak lebih dari stok yang tersedia.')
+                                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                        $product = Product::find($get('product_id'));
+                                        $conversionRate = $product->conversion_rate ?? 1;
+                                        $qtyInPcs = ($get('unit') === $product->unit_1) ? $state * $conversionRate : $state;
+
+                                        if ($qtyInPcs > $get('total_stock')) {
+                                            $qtyInPcs = $get('total_stock'); // Limit to total stock if it exceeds
+                                        }
+
+                                        $set('qty_in_pcs', $qtyInPcs);
+                                    }),
+
+
+
+                                // Forms\Components\TextInput::make('qty')
+                                //     ->label('Quantity')
+                                //     ->reactive()
+                                //     ->required()
+                                //     ->minValue(1)
+                                //     ->default(1)
+                                //     ->columnSpan(2),
 
                                 Forms\Components\TextInput::make('total_stock')
                                     ->label('Total Stock')
@@ -177,36 +216,6 @@ class OutTransactionResource extends Resource
             self::reduceStock($qtyInPcs, $productId);
         }
     }
-
-    public static function reduceStock($qtyInPcs, $productId)
-    {
-        // Get the oldest stock entries for the specified product ID
-        $stockEntries = Stock::where('product_id', $productId)
-            ->orderBy('date')  // Assumption: older stock entries are used first
-            ->get();
-
-        foreach ($stockEntries as $stock) {
-            if ($qtyInPcs <= 0) break;
-
-            // Deduct stock if the quantity in this stock entry is less than or equal to the required quantity
-            if ($stock->qty <= $qtyInPcs) {
-                $qtyInPcs -= $stock->qty;
-                $stock->qty = 0; // Mark this stock entry as fully used
-                $stock->save();  // Save the changes to the stock entry
-            } else {
-                // Deduct partially from this stock entry
-                $stock->qty -= $qtyInPcs;
-                $qtyInPcs = 0;  // All quantity has been deducted
-                $stock->save();  // Save the changes to the stock entry
-            }
-        }
-
-        // If qtyInPcs is still greater than 0, it means there was not enough stock
-        if ($qtyInPcs > 0) {
-            \Log::warning("Insufficient stock to fulfill request for product ID {$productId}. Remaining qty needed: {$qtyInPcs}");
-        }
-    }
-
 
     public static function table(Table $table): Table
     {
