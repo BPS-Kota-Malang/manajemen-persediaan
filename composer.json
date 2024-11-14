@@ -9,6 +9,7 @@
         "php": "^8.2",
         "doctrine/dbal": "^3.9",
         "filament/filament": "3.2.57",
+        "filament/notifications": "*",
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^3.1",

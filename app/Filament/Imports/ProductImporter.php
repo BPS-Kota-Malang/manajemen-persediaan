@@ -9,6 +9,7 @@ use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\Models\Import;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Filament\Notifications\Notification;
 
 class ProductImporter extends Importer implements WithHeadingRow
 {
@@ -52,6 +53,19 @@ class ProductImporter extends Importer implements WithHeadingRow
         // ]);
 
         return new Product();
+    }
+
+    public function handleImportCompletion(Import $import): void
+    {
+        // Generate body for the notification
+        $body = $this->getCompletedNotificationBody($import);
+
+        // Kirim notifikasi secara langsung tanpa queue
+        Notification::make()
+            ->title('Import Completed')
+            ->body($body)
+            ->success()  // Set success atau error
+            ->send();
     }
 
     public static function getCompletedNotificationBody(Import $import): string

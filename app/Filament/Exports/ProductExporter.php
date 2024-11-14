@@ -10,6 +10,7 @@ use OpenSpout\Common\Entity\Style\CellAlignment;
 use OpenSpout\Common\Entity\Style\CellVerticalAlignment;
 use OpenSpout\Common\Entity\Style\Color;
 use OpenSpout\Common\Entity\Style\Style;
+use Filament\Notifications\Notification;
 
 class ProductExporter extends Exporter
 {
@@ -41,6 +42,19 @@ class ProductExporter extends Exporter
         }
 
         return $body;
+    }
+    
+    public function handleExportCompletion(Export $export): void
+    {
+        // Generate body for the notification
+        $body = $this->getCompletedNotificationBody($export);
+
+        // Kirim notifikasi secara langsung tanpa queue
+        Notification::make()
+            ->title('Export Completed')
+            ->body($body)
+            ->success()  // Set success atau error
+            ->send();
     }
 
 
