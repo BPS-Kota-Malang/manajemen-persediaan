@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use PhpParser\Node\Stmt\Label;
 use Filament\Tables\Actions\ImportAction;
 use App\Filament\Imports\ProductImporter;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
 
 class ProductResource extends Resource
 {
@@ -116,6 +118,17 @@ public static function form(Form $form): Form
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                // Tables\Actions\Action::make('Download Pdf')
+                //     ->icon('heroicon-o-document-download')
+                //     ->url(fn (Product $record) => route('product.pdf.download', $record))
+                //     ->openUrlInNewTab(),
+                // Tables\Actions\Action::make('View Qr Code')
+                //     ->icon('heroicon-o-qrcode')
+                //     ->url(fn (Product $record) => static::getUrl('qr-code',$record)),
+                Tables\Actions\Action::make('Qr Code')
+                    ->icon('heroicon-o-qr-code')
+                    ->url(fn (Product $record) => static::getUrl('qr-code', ['record' => $record->getKey()])),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -143,6 +156,7 @@ public static function form(Form $form): Form
             'index' => Pages\ListProducts::route('/'),
             'create' => Pages\CreateProduct::route('/create'),
             'edit' => Pages\EditProduct::route('/{record}/edit'),
+            'qr-code' => Pages\ViewQrcode::route('/{record}/qr-code'),
         ];
     }
 }
