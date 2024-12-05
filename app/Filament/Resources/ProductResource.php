@@ -159,4 +159,21 @@ public static function form(Form $form): Form
             'qr-code' => Pages\ViewQrcode::route('/{record}/qr-code'),
         ];
     }
+
+    public function submit()
+{
+    $id = request('id'); // Retrieve ID from the form
+    return $this->downloadQrCode($id); // Call the download method
+}
+public function downloadQrCode($id)
+    {
+        // Generate QR Code as PNG
+        $qrCode = QrCode::format('png')->size(200)->generate($id);
+
+        // Return QR Code as download response
+        return Response::make($qrCode, 200, [
+            'Content-Type' => 'image/png',
+            'Content-Disposition' => 'attachment; filename="qrcode-' . $id . '.png"',
+        ]);
+    }
 }

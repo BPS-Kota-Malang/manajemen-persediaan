@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
 
 class ProductController extends Controller
 {
@@ -72,5 +74,13 @@ class ProductController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+    public function downloadQrCode(Product $product)
+    {
+        $qrCode = QrCode::format('png')->size(200)->generate($product->code);
+
+        return response($qrCode)
+            ->header('Content-Type', 'image/png')
+            ->header('Content-Disposition', 'attachment; filename="qr-code-' . $product->code . '.png"');
     }
 }

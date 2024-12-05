@@ -54,5 +54,7 @@ Route::get('/categories/create', [CategoryController::class, 'create'])->name('c
 // Route untuk menyimpan kategori baru
 Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
 
-
+Route::get('/products/{product}/download-qr-code', [ProductController::class, 'downloadQrCode'])
+    ->name('product.qr-code.download');
+    
 require __DIR__.'/auth.php';
