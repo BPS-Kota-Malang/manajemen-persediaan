@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 
+
 class ProductController extends Controller
 {
     protected $user;
