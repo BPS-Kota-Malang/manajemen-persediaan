@@ -20,6 +20,8 @@ class OutTransactionResource extends Resource
     protected static ?int $navigationSort = 2;
     protected static ?string $label = 'OutTransaction';
 
+    public static $view = 'customers.list-records';
+
     public static function form(Form $form): Form
     {
         return $form
@@ -53,80 +55,115 @@ class OutTransactionResource extends Resource
                                     ->required()
                                     ->columnSpan(5),
 
-                                Forms\Components\Button::make('add_to_cart')
-                                    ->label('Add to Cart')
-                                    ->color('primary')
-                                    ->action('addToCart') // Tindakan untuk menambah ke keranjang
-                                    ->icon('heroicon-o-shopping-cart')
+                                Forms\Components\Select::make('unit')
+                                    ->label('Satuan')
+                                    ->reactive()
+                                    ->options(function (callable $get) {
+                                        $product = Product::find($get('product_id'));
+                                        if ($product) {
+                                            return [
+                                                $product->unit_1 => $product->unit_1,
+                                                $product->unit_2 => $product->unit_2,
+                                            ];
+                                        }
+                                        return [];
+                                    })
+                                    ->afterStateUpdated(function (callable $set, callable $get) {
+                                        $state = $get('qty'); // Dapatkan qty saat ini
+                                        $product = Product::find($get('product_id'));
+
+                                        if ($product) {
+                                            $conversionRate = $product->conversion_rate;
+
+                                            if ($get('unit') === $product->unit_1) {
+                                                $qtyInPcs = $state * $conversionRate;
+                                            } elseif ($get('unit') === $product->unit_2) {
+                                                $qtyInPcs = $state;
+                                            } else {
+                                                $qtyInPcs = 0; // Default ke 0 jika unit tidak valid
+                                            }
+
+                                            $set('qty_in_pcs', $qtyInPcs); // Set nilai qty_in_pcs
+                                        }
+
+                                        // Recalculate amount and total
+                                        //static::calculateAmountAndTotal($get, $set);
+                                    })
+                                    ->required()
                                     ->columnSpan(2),
+
+                                Forms\Components\TextInput::make('qty')
+                                    ->label('Quantity')
+                                    ->reactive()
+                                    ->required()
+                                    ->minValue(1)
+                                    ->columnSpan(2)
+                                    ->helperText('Masukkan qty tidak lebih dari stok yang tersedia.')
+                                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                        $product = Product::find($get('product_id'));
+                                        $conversionRate = $product->conversion_rate ?? 1;
+                                        $qtyInPcs = ($get('unit') === $product->unit_1) ? $state * $conversionRate : $state;
+
+                                        if ($qtyInPcs > $get('total_stock')) {
+                                            $qtyInPcs = $get('total_stock'); // Limit to total stock if it exceeds
+                                        }
+
+                                        $set('qty_in_pcs', $qtyInPcs);
+                                    }),
+
+
+
+                                // Forms\Components\TextInput::make('qty')
+                                //     ->label('Quantity')
+                                //     ->reactive()
+                                //     ->required()
+                                //     ->minValue(1)
+                                //     ->default(1)
+                                //     ->columnSpan(2),
+
+                                Forms\Components\TextInput::make('total_stock')
+                                    ->label('Total Stock')
+                                    ->disabled()
+                                    ->columnSpan(3),
+
+                                Forms\Components\TextInput::make('qty_in_pcs')
+                                    ->label('Quantity in Pcs')
+                                    ->disabled()
+                                    ->required()
+                                    ->columnSpan(3)
+                                    ->afterStateUpdated(function (callable $set, callable $get) {
+                                        $qty = $get('qty');
+                                        $product = Product::find($get('product_id'));
+
+                                        if ($product) {
+                                            $conversionRate = $product->conversion_rate;
+
+                                            if ($get('unit') === $product->unit_1) {
+                                                $qtyInPcs = $qty * $conversionRate;
+                                            } elseif ($get('unit') === $product->unit_2) {
+                                                $qtyInPcs = $qty;
+                                            } else {
+                                                $qtyInPcs = 0; // Default to 0 if no valid unit
+                                            }
+
+                                            $set('qty_in_pcs', $qtyInPcs); // Set the quantity in pcs
+                                        }
+                                    })
+                                    ->required()
+                                    ->columnSpan(3),
+
+
+
                             ])
+                            ->reactive()
                             ->defaultItems(1)
-                            ->columns(2)
+                            ->columns(10)
                             ->columnSpan('full')
-                            ->label('Barang Keluar')
-                            ->createItemButtonLabel('Tambah Barang'),
-
-                    // Menampilkan keranjang
-                    Forms\Components\Section::make('Keranjang Barang')
-                        ->schema([
-                            Forms\Components\Repeater::make('cart')
-                                ->defaultItems(1)
-                                ->schema([
-                                    Forms\Components\TextColumn::make('product_name')
-                                        ->label('Produk')
-                                        ->getStateUsing(fn($state) => Product::find($state['product_id'])->name),
-
-                                    Forms\Components\TextColumn::make('qty')
-                                        ->label('Jumlah'),
-                                ])
-                                ->columnSpan('full')
-                                ->label('Daftar Keranjang')
-                                ->createItemButtonLabel('Tambah Barang ke Keranjang'),
-                        ])
-                        ->collapsed(false), // Tampilkan keranjang langsung di halaman yang sama
-
-                    // Tombol Checkout
-                    Forms\Components\Button::make('checkout')
-                        ->label('Checkout')
-                        ->color('primary')
-                        ->action('checkoutCart') // Aksi untuk proses checkout
-                        ->icon('heroicon-o-check-circle'),
-                ])
-            ]);
-    }
-
-    public function addToCart(array $data): void
-    {
-        // Menyimpan item ke dalam session keranjang
-        $cartItem = [
-            'product_id' => $data['product_id'],
-            'qty' => $data['qty'],
-        ];
-    
-        session()->push('cart', $cartItem); // Menyimpan ke session keranjang
-        $this->emit('notify', ['type' => 'success', 'message' => 'Barang telah ditambahkan ke keranjang!']);
-        dd(session()->get('cart')); // Debugging untuk mengecek apakah data tersimpan di session
-    }
-    
-
-    public function checkoutCart()
-    {
-        // Ambil data keranjang dari session
-        $cartItems = session()->get('cart', []);
-
-        // Proses checkout: simpan transaksi dan kurangi stok
-        foreach ($cartItems as $item) {
-            $product = Product::find($item['product_id']);
-            if ($product && $item['qty'] <= $product->total_stock) {
-                // Kurangi stok produk sesuai jumlah yang dibeli
-                $product->decrement('total_stock', $item['qty']);
-            }
-        }
-
-        // Hapus data keranjang setelah checkout selesai
-        session()->forget('cart');
-
-        $this->emit('notify', ['type' => 'success', 'message' => 'Checkout berhasil!']);
+                            ->label(''),
+                    ])
+                    ->collapsible(),
+            ])
+            ->columns(12);
     }
 
     public static function mutateFormDataBeforeCreate(array $data): array
@@ -143,6 +180,7 @@ class OutTransactionResource extends Resource
 
         return $data;
     }
+
 
     public static function afterSave(OutTransaction $transaction): void
     {
@@ -202,6 +240,7 @@ class OutTransactionResource extends Resource
             'index' => Pages\ListOutTransactions::route('/'),
             'create' => Pages\CreateOutTransaction::route('/create'),
             'edit' => Pages\EditOutTransaction::route('/{record}/edit'),
+            //'cart' => Pages\CartPage::route('/cart'),
         ];
     }
 }

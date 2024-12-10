@@ -27,5 +27,26 @@ class EmployeesTableSeeder extends Seeder
                 // 'updated_at' => now(),
             ],
         ]);
+
+        $user = User::create([
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        Employee::create([
+            'user_id' => $user->id,
+            // ... field lainnya
+        ]);
+
+        // Contoh 2: Mengupdate employee yang sudah ada
+        $existingUser = User::find(1);
+        $existingEmployee = Employee::find(1);
+        
+        if ($existingEmployee && $existingUser) {
+            $existingEmployee->update([
+                'user_id' => $existingUser->id,
+            ]);
+        };
     }
 }

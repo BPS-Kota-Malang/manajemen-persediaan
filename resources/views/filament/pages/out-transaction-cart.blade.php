@@ -35,12 +35,17 @@
                 </table>
             </div>
 
-            <!-- Tombol Checkout dan Reset -->
-            <div class="flex justify-end space-x-2">
-                <x-filament::button color="success" wire:click="checkout">
+             <!-- Tombol Checkout dan Reset -->
+             <div class="flex justify-end space-x-2">
+                <x-filament::button
+                    color="success"
+                    wire:click="checkout">
                     Checkout
                 </x-filament::button>
-                <x-filament::button color="danger" wire:click="resetCart">
+
+                <x-filament::button
+                    color="danger"
+                    wire:click="resetCart">
                     Reset Cart
                 </x-filament::button>
             </div>
