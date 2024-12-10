@@ -13,7 +13,7 @@ class ViewQrCode extends ViewRecord
     protected static string $resource = ProductResource::class;
 
     protected static string $view = 'filament-panels.resources.product-resource.pages.view-qr-code';
-    
+
     protected function getActions(): array
     {
         return [];
@@ -21,10 +21,13 @@ class ViewQrCode extends ViewRecord
 
     public function generateQrCode()
     {
+        // Generate URL for cart page with product ID
+        $url = route('outtransactions.cart.add', ['product_id' => $this->record->id]);
+
         // Generate QR Code as a base64 encoded string
         $qrCode = Builder::create()
-            ->data($this->record->id) // Data for the QR code
-            ->size(200)               // Size of the QR Code
+            ->data($url) // Use the URL as the QR code data
+            ->size(200)  // Size of the QR Code
             ->build();
 
         // Encode QR code to base64
@@ -32,23 +35,32 @@ class ViewQrCode extends ViewRecord
         return 'data:' . $qrCode->getMimeType() . ';base64,' . $imageData;
     }
 
-    // Tambahkan metode untuk unduhan QR Code
     public function downloadQrCode(): StreamedResponse
     {
+        // Generate URL for cart page with product ID
+        $url = route('outtransactions.cart', ['product_id' => $this->record->id]);
+
         // Generate QR Code as PNG
         $qrCode = Builder::create()
-            ->data($this->record->id) // Data untuk QR Code
-            ->size(200)               // Ukuran QR Code
+            ->data($url) // Use the URL as the QR code data
+            ->size(200)  // Size of the QR Code
             ->build();
 
-        // Nama file QR Code
+        // Name of the QR Code file
         $fileName = 'qrcode-' . $this->record->name . '.png';
 
-        // Response file untuk diunduh
+        // Response file for download
         return response()->streamDownload(function () use ($qrCode) {
-            echo $qrCode->getString(); // QR Code dalam bentuk string
+            echo $qrCode->getString(); // QR Code as a string
         }, $fileName, [
             'Content-Type' => 'image/png',
         ]);
+    }
+
+    public function generateQrCodeUrl()
+    {
+        $url = route('outtransactions.cart', ['product_id' => $this->record->id]);
+    
+        return $url;
     }
 }

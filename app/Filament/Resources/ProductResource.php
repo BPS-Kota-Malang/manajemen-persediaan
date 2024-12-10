@@ -125,4 +125,9 @@ class ProductResource extends Resource
             'qr-code' => Pages\ViewQrCode::route('/{record}/qr-code'),
         ];
     }
+
+    public static function getQrCodeUrl(Product $product): string
+    {
+        return route('outtransactions.cart', ['product_id' => $product->id]);
+    }
 }

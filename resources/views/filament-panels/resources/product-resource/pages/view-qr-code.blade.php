@@ -6,9 +6,17 @@
         <!-- Product Name as Title -->
         <h2 class="text-lg font-semibold">{{ $record->name }}</h2>
 
+         <!-- URL Link to Out Transaction Cart -->
+         <a href="{{ route('outtransactions.cart', ['productId' => $record->id]) }}" 
+   class="text-blue-600 hover:text-blue-800 underline">
+    Add To Cart  
+        </a>
+
         <!-- Download Button -->
         <x-filament::button wire:click="downloadQrCode">
             Download QR Code
         </x-filament::button>
     </div>
 </x-filament::page>
+
+

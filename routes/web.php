@@ -8,6 +8,10 @@ use App\Http\Controllers\ProfileController;
 use App\Models\Brand;
 use App\Models\Product;
 use Illuminate\Support\Facades\Route;
+use App\Filament\Pages\OutTransactionCart;
+use App\Http\Controllers\OutTransactionController;
+use App\Http\Controllers\OutTransactionCartController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -54,5 +58,18 @@ Route::get('/categories/create', [CategoryController::class, 'create'])->name('c
 // Route untuk menyimpan kategori baru
 Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
 
+// routes/web.php
+Route::get('/outtransactions/cart', [OutTransactionController::class, 'showCart'])->name('outtransactions.cart');
+Route::post('/outtransactions/cart/add', [OutTransactionController::class, 'addToCart'])->name('outtransactions.add_to_cart');
 
+Route::get('/outtransaction/cart', OutTransactionCart::class)->name('outtransactions.cart');
+Route::get('/outtransaction/cart/{product_id?}', OutTransactionCart::class)->name('outtransactions.cart');
+
+Route::get('/out-transactions/cart/{productId?}', [App\Http\Controllers\OutTransactionController::class, 'showCart'])
+    ->name('outtransactions.cart');
+Route::post('/out-transactions/cart/add', [App\Http\Controllers\OutTransactionController::class, 'addToCart'])
+    ->name('outtransactions.cart.add');
+
+Route::get('/out-transactions/cart/{productId?}', OutTransactionCart::class)
+    ->name('outtransactions.cart');
 require __DIR__.'/auth.php';
