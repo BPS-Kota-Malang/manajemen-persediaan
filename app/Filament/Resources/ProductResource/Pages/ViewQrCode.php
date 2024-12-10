@@ -22,18 +22,35 @@ class ViewQrCode extends ViewRecord
     public function generateQrCode()
     {
         // Generate URL for cart page with product ID
-        $url = route('outtransactions.cart.add', ['product_id' => $this->record->id]);
+        $url = route('outtransactions.cart', ['productId' => $this->record->id]);
 
         // Generate QR Code as a base64 encoded string
         $qrCode = Builder::create()
+            //->writer(new PngWriter())
             ->data($url) // Use the URL as the QR code data
             ->size(200)  // Size of the QR Code
             ->build();
 
         // Encode QR code to base64
         $imageData = base64_encode($qrCode->getString());
+
         return 'data:' . $qrCode->getMimeType() . ';base64,' . $imageData;
     }
+    // public function generateQrCode()
+    // {
+    //     // Generate URL for cart page with product ID
+    //     $url = route('outtransactions.cart.add', ['product_id' => $this->record->id]);
+
+    //     // Generate QR Code as a base64 encoded string
+    //     $qrCode = Builder::create()
+    //         ->data($url) // Use the URL as the QR code data
+    //         ->size(200)  // Size of the QR Code
+    //         ->build();
+
+    //     // Encode QR code to base64
+    //     $imageData = base64_encode($qrCode->getString());
+    //     return 'data:' . $qrCode->getMimeType() . ';base64,' . $imageData;
+    // }
 
     public function downloadQrCode(): StreamedResponse
     {
@@ -58,9 +75,9 @@ class ViewQrCode extends ViewRecord
     }
 
     public function generateQrCodeUrl()
-    {
-        $url = route('outtransactions.cart', ['product_id' => $this->record->id]);
-    
-        return $url;
-    }
+       {
+           $url = route('outtransactions.cart', ['productId' => $this->record->id]);
+
+           return $url;
+       }
 }

@@ -1,6 +1,18 @@
+
 <x-filament::page>
     <div class="space-y-4">
+
+         <!-- QR Scanner Section -->
+         <div class="mb-6 bg-white p-4 rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-4">Scan QR Code</h2>
+            <div class="aspect-video max-w-md mx-auto">
+                <video id="preview" class="w-full h-full rounded-lg"></video>
+            </div>
+        </div>
+
         <h2 class="text-xl font-semibold">Cart Items</h2>
+
+        
 
         @if (count($this->cartItems) > 0)
             <!-- Tabel Cart -->
@@ -53,4 +65,43 @@
             <p class="text-gray-500">Your cart is empty.</p>
         @endif
     </div>
+
+    <!-- Scripts untuk QR Scanner -->
+    @push('scripts')
+    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let scanner = new Instascan.Scanner({ 
+                video: document.getElementById('preview'),
+                mirror: false
+            });
+
+            scanner.addListener('scan', function (content) {
+                // Redirect ke URL yang ada di QR code
+                window.location.href = content;
+            });
+
+            // Start camera
+            Instascan.Camera.getCameras().then(function (cameras) {
+                if (cameras.length > 0) {
+                    // Coba gunakan kamera belakang jika ada
+                    let selectedCamera = cameras[0];
+                    cameras.forEach(function(camera) {
+                        if (camera.name.toLowerCase().includes('back')) {
+                            selectedCamera = camera;
+                        }
+                    });
+                    scanner.start(selectedCamera);
+                } else {
+                    console.error('No cameras found.');
+                    alert('No cameras found.');
+                }
+            }).catch(function (e) {
+                console.error(e);
+                alert('Error accessing camera: ' + e.message);
+            });
+        });
+    </script>
+    @endpush
+
 </x-filament::page>
