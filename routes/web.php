@@ -58,6 +58,7 @@ Route::get('/categories/create', [CategoryController::class, 'create'])->name('c
 // Route untuk menyimpan kategori baru
 Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
 
+<<<<<<< HEAD
 // routes/web.php
 Route::get('/outtransactions/cart', [OutTransactionController::class, 'showCart'])->name('outtransactions.cart');
 Route::post('/outtransactions/cart/add', [OutTransactionController::class, 'addToCart'])->name('outtransactions.add_to_cart');
@@ -72,4 +73,9 @@ Route::post('/out-transactions/cart/add', [App\Http\Controllers\OutTransactionCo
 
 Route::get('/out-transactions/cart/{productId?}', OutTransactionCart::class)
     ->name('outtransactions.cart');
+=======
+Route::get('/products/{product}/download-qr-code', [ProductController::class, 'downloadQrCode'])
+    ->name('product.qr-code.download');
+    
+>>>>>>> 6d35a0510cf7ef45c2a95565ce63eca9a78f8e9d
 require __DIR__.'/auth.php';

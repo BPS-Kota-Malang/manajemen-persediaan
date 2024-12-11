@@ -31,4 +31,12 @@ class ProductController extends Controller
         // Mengirimkan QR Code sebagai response gambar atau menyimpannya ke file
         return response($qrCodeData)->header('Content-Type', 'image/png');
     }
+    public function downloadQrCode(Product $product)
+    {
+        $qrCode = QrCode::format('png')->size(200)->generate($product->code);
+
+        return response($qrCode)
+            ->header('Content-Type', 'image/png')
+            ->header('Content-Disposition', 'attachment; filename="qr-code-' . $product->code . '.png"');
+    }
 }
