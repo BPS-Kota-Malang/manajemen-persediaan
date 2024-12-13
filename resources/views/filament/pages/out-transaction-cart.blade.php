@@ -20,51 +20,117 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead>
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Produk</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jumlah</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 uppercase tracking-wider">No</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 uppercase tracking-wider">Nama Produk</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 uppercase tracking-wider">Quantity</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 uppercase tracking-wider">Unit</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @php
+                            $counter = 1;
+                        @endphp
                         @foreach ($this->cartItems as $item)
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $item['name'] }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $item['quantity'] }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">Rp {{ number_format($item['price'], 0, ',', '.') }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">Rp {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <button 
-                                        wire:click="removeItem({{ $item['id'] }})" 
-                                        class="bg-red-500 hover:bg-red-700 text-white px-2 py-1 rounded">
-                                        Remove
-                                    </button>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ $counter++ }}
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {{ $item['name'] }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center space-x-2">
+                                        <!-- Tombol Minus -->
+                                        <button 
+                                            wire:click="decrementQuantity({{ $item['id'] }})"
+                                            class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                                            </svg>
+                                        </button>
+
+                                        <!-- Quantity -->
+                                        <span class="text-gray-700 px-6 min-w-[3rem] text-center font-medium">
+                                            {{ $item['quantity'] }}
+                                        </span>
+
+                                        <!-- Tombol Plus -->
+                                        <button 
+                                            wire:click="incrementQuantity({{ $item['id'] }})"
+                                            class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {{ $item['unit_2'] ?? 'pcs' }} {{-- Mengambil unit_2 dari product --}}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+    <button 
+        wire:click="removeItem({{ $item['id'] }})"
+        class="inline-flex items-center px-3 py-2 bg-red-600 hover:bg-red-700 rounded-md">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        <span class="ml-2 text-white font-bold text-sm">Delete</span>
+    </button>
+</td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
 
-             <!-- Tombol Checkout dan Reset -->
-             <div class="flex justify-end space-x-2">
+            <!-- Tombol Checkout dan Reset -->
+            <div class="flex justify-end gap-4">
                 <x-filament::button
-                    color="success"
+                    color="primary"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
                     wire:click="checkout">
                     Checkout
                 </x-filament::button>
-
+                
                 <x-filament::button
-                    color="danger"
+                    color="danger" 
+                    class="bg-red-600 hover:bg-red-700 text-white font-semibold"
                     wire:click="resetCart">
                     Reset Cart
                 </x-filament::button>
             </div>
+
+
         @else
             <p class="text-gray-500">Your cart is empty.</p>
         @endif
     </div>
+
+     <!-- Modal Edit Quantity -->
+     <x-filament::modal id="edit-quantity-modal" wire:model="showEditModal">
+        <x-slot name="header">
+            Edit Quantity
+        </x-slot>
+
+        <div class="p-4">
+            <x-filament::input
+                type="number"
+                wire:model="editQuantity"
+                label="Quantity"
+                min="1"
+            />
+        </div>
+
+        <x-slot name="footer">
+            <x-filament::button wire:click="updateQuantity" color="primary">
+                Save
+            </x-filament::button>
+            <x-filament::button wire:click="$set('showEditModal', false)" color="secondary">
+                Cancel
+            </x-filament::button>
+        </x-slot>
+    </x-filament::modal>
 
     <!-- Scripts untuk QR Scanner -->
     @push('scripts')

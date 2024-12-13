@@ -37,6 +37,7 @@ class OutTransactionCart extends Page
                     'name' => $product->name,
                     'price' => $product->price,
                     'quantity' => isset($cart[$product->id]) ? $cart[$product->id]['quantity'] + 1 : 1,
+                    'unit_2' => $product->unit_2,
                 ];
                 Session::put('cart', $cart);
             }
@@ -45,6 +46,35 @@ class OutTransactionCart extends Page
         // Ambil data cart dari session
         $this->cartItems = Session::get('cart', []);
     }
+    
+
+    public function incrementQuantity($productId): void
+    {
+        $cart = Session::get('cart', []);
+        
+        if (isset($cart[$productId])) {
+            $cart[$productId]['quantity']++;
+            Session::put('cart', $cart);
+            $this->cartItems = $cart;
+        }
+    }
+
+    public function decrementQuantity($productId): void
+    {
+        $cart = Session::get('cart', []);
+        
+        if (isset($cart[$productId])) {
+            if ($cart[$productId]['quantity'] > 1) {
+                $cart[$productId]['quantity']--;
+                Session::put('cart', $cart);
+                $this->cartItems = $cart;
+            } else {
+                // Optional: Hapus item jika quantity mencapai 0
+                $this->removeItem($productId);
+            }
+        }
+    }
+    
 
     public function removeItem($productId)
     {
