@@ -13,13 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use PhpParser\Node\Stmt\Label;
-use Filament\Tables\Actions\ImportAction;
 use App\Filament\Imports\ProductImporter;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
-
 
 class ProductResource extends Resource
 {
@@ -27,108 +21,83 @@ class ProductResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-gift';
 
-
     public static function getForm(): array
-{
-    return [
-        Forms\Components\TextInput::make('code')
-            ->label('Kode Produk')
-            ->required(),
-
-        Forms\Components\TextInput::make('name')
-            ->label('Nama Produk')
-            ->required(),
-
-        Forms\Components\Select::make('category_id')
-            ->label('Kategori')
-            ->relationship('category', 'name')
-            ->required(),
-
-        Forms\Components\Select::make('brand_id')
-            ->label('Merek')
-            ->relationship('brand', 'name')
-            ->required(),
-
-        // Forms\Components\TextInput::make('stok')
-        //     ->label('Stok')
-        //     ->numeric()
-        //     ->required(),
-
+    {
+        return [
+            Forms\Components\TextInput::make('code')
+                ->label('Kode Produk')
+                ->required(),
+            Forms\Components\TextInput::make('name')
+                ->label('Nama Produk')
+                ->required(),
+            Forms\Components\Select::make('category_id')
+                ->label('Kategori')
+                ->relationship('category', 'name')
+                ->required(),
+            Forms\Components\Select::make('brand_id')
+                ->label('Merek')
+                ->relationship('brand', 'name')
+                ->required(),
             Forms\Components\Select::make('unit_1')
-            ->label('Satuan 1')
-            ->options([
-                'box' => 'Box',
-                'pack' => 'Pack',
-            ])
-            ->required(),
+                ->label('Satuan 1')
+                ->options([
+                    'box' => 'Box',
+                    'pack' => 'Pack',
+                ])
+                ->required(),
+            Forms\Components\Select::make('unit_2')
+                ->label('Satuan 2')
+                ->options([
+                    'pcs' => 'Pcs',
+                    'rim' => 'Rim',
+                ])
+                ->required(),
+            Forms\Components\TextInput::make('conversion_rate')
+                ->label('Pcs Per Pack')
+                ->numeric()
+                ->required(),
+        ];
+    }
 
-        Forms\Components\Select::make('unit_2')
-            ->label('Satuan 2')
-            ->options([
-                'pcs' => 'Pcs',
-                'rim' => 'Rim',
-            ])
-            ->required(),
-
-        Forms\Components\TextInput::make('conversion_rate')
-            ->label('Pcs Per Pack')
-            ->numeric()
-            ->required(),
-    ];
-}
-
-
-
-public static function form(Form $form): Form
-{
-    return $form
-        ->schema(
-            self::getForm()  // Memastikan ini mengembalikan array dari komponen-komponen form
-        );
-}
-
+    public static function form(Form $form): Form
+    {
+        return $form->schema(self::getForm());
+    }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                //
                 Tables\Columns\TextColumn::make('code')
-                ->searchable(),
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('name')
-                ->searchable(),
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('category.name')
-                ->searchable(),
+                    ->label('Kategori')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('brand.name')
-                ->searchable(),
-                Tables\Columns\TextColumn::make('total_stock') // ini nanti ngambil dari table stock
-                ->label('Total Stok')
-                ->getStateUsing(fn ($record) => $record->stocks->sum('qty')),
+                    ->label('Merek')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('total_stock')
+                    ->label('Total Stok')
+                    ->getStateUsing(fn($record) => $record->stocks->sum('qty')),
                 Tables\Columns\TextColumn::make('unit_1')
-                ->searchable(),
+                    ->label('Satuan 1')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('unit_2')
-                ->searchable(),
+                    ->label('Satuan 2')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('conversion_rate')
-                ->label('Qty per Pack')
-                ->searchable(),
+                    ->label('Qty per Pack')
+                    ->searchable(),
             ])
-            ->filters([
-                //
-            ])
+            ->filters([])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
-                // Tables\Actions\Action::make('Download Pdf')
-                //     ->icon('heroicon-o-document-download')
-                //     ->url(fn (Product $record) => route('product.pdf.download', $record))
-                //     ->openUrlInNewTab(),
-                // Tables\Actions\Action::make('View Qr Code')
-                //     ->icon('heroicon-o-qrcode')
-                //     ->url(fn (Product $record) => static::getUrl('qr-code',$record)),
                 Tables\Actions\Action::make('Qr Code')
                     ->icon('heroicon-o-qr-code')
-                    ->url(fn (Product $record) => static::getUrl('qr-code', ['record' => $record->getKey()])),
-
+                    ->url(fn(Product $record) => static::getUrl('qr-code', ['record' => $record->getKey()])),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -137,17 +106,14 @@ public static function form(Form $form): Form
                 ]),
             ])
             ->headerActions([
-                Tables\Actions\ExportAction::make()->exporter(ProductExporter::class),
-                Tables\Actions\ImportAction::make()->importer(ProductImporter::class)
+                ExportAction::make()->exporter(ProductExporter::class),
+                Tables\Actions\ImportAction::make()->importer(ProductImporter::class),
             ]);
-            
     }
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
@@ -156,24 +122,12 @@ public static function form(Form $form): Form
             'index' => Pages\ListProducts::route('/'),
             'create' => Pages\CreateProduct::route('/create'),
             'edit' => Pages\EditProduct::route('/{record}/edit'),
-            'qr-code' => Pages\ViewQrcode::route('/{record}/qr-code'),
+            'qr-code' => Pages\ViewQrCode::route('/{record}/qr-code'),
         ];
     }
 
-    public function submit()
-{
-    $id = request('id'); // Retrieve ID from the form
-    return $this->downloadQrCode($id); // Call the download method
-}
-public function downloadQrCode($id)
+    public static function getQrCodeUrl(Product $product): string
     {
-        // Generate QR Code as PNG
-        $qrCode = QrCode::format('png')->size(200)->generate($id);
-
-        // Return QR Code as download response
-        return Response::make($qrCode, 200, [
-            'Content-Type' => 'image/png',
-            'Content-Disposition' => 'attachment; filename="qrcode-' . $id . '.png"',
-        ]);
+        return route('outtransactions.cart', ['product_id' => $product->id]);
     }
 }

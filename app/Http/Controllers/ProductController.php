@@ -2,75 +2,41 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Product;
-use App\Http\Controllers\Controller;
-use App\Models\User;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter; // Agar QR code dalam format PNG
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelL;
 
 class ProductController extends Controller
 {
-    protected $user;
-    protected $products;
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(){
-        $products = Product::all();
-        return view('admin.product', compact('products'));//n
+    public function generateQRCode($productId)
+    {
+        $product = Product::findOrFail($productId);
         
-        // Debugging data
-        dd($products);
+        // URL dinamis untuk halaman keranjang dengan parameter produk_id
+        $url = route('outtransactions.cart', ['product_id' => $product->id]);
+        
+        // Buat QR Code menggunakan Endroid QR Code
+        $qrCode = new QrCode($url);
+        $qrCode->setEncoding(Encoding::UTF_8);
+        $qrCode->setErrorCorrectionLevel(new ErrorCorrectionLevelL(1)); // Error correction level
+        $qrCode->setSize(300); // Ukuran QR Code
+        $qrCode->setMargin(10); // Margin QR Code
 
-        return view('admin.product', [
-            'products' => $products
-        ]);
+        // Simpan QR Code ke file
+        $writer = new PngWriter();
+        $qrCodeData = $writer->writeString($qrCode); // Menghasilkan QR code dalam bentuk string gambar PNG
+
+        // Mengirimkan QR Code sebagai response gambar atau menyimpannya ke file
+        return response($qrCodeData)->header('Content-Type', 'image/png');
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function downloadQrCode(Product $product)
     {
-        //
-    }
+        $qrCode = QrCode::format('png')->size(200)->generate($product->code);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return response($qrCode)
+            ->header('Content-Type', 'image/png')
+            ->header('Content-Disposition', 'attachment; filename="qr-code-' . $product->code . '.png"');
     }
 }

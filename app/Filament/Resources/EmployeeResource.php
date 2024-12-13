@@ -50,7 +50,12 @@ class EmployeeResource extends Resource
                 Forms\Components\Select::make('team_id')
                     ->label('Tim')
                     ->relationship('team', 'name')
-                    ->required(),                
+                    ->required(),
+                Forms\Components\Select::make('user_id')
+                    ->relationship('user', 'name')
+                    ->required()
+                    ->preload()
+                    ->searchable(),                
                 ]);
     }
 

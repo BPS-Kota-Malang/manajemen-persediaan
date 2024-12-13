@@ -55,32 +55,6 @@ class OutTransactionResource extends Resource
                                     ->required()
                                     ->columnSpan(5),
 
-                                // Forms\Components\Select::make('product_id')
-                                //     ->label('Product')
-                                //     ->relationship('product', 'name')
-                                //     ->reactive()
-                                //     ->afterStateUpdated(function ($state, callable $set) {
-                                //         $product = Product::find($state);
-                                //         if ($product) {
-                                //             $set('total_stock', $product->total_stock); // Set total stock of the product
-                                //         } else {
-
-                                //             $set('total_stock', 0);
-                                //         }
-                                //     })
-                                //     ->getSearchResultsUsing(
-                                //         fn(string $search) => Product::whereHas('stocks', function($query) {
-                                //             $query->havingRaw('SUM(qty) > 0'); // Filter products with total stock > 0
-                                //         })
-                                //         // fn(string $search) => Product::where('stok', '>', 0)
-                                //             ->where('name', 'like', "%{$search}%")
-                                //             ->limit(25)
-                                //             ->pluck('name', 'id')
-                                //     )
-                                //     ->getOptionLabelUsing(fn($value): ?string => Product::find($value)?->name)
-                                //     ->required()
-                                //     ->columnSpan(5),
-
                                 Forms\Components\Select::make('unit')
                                     ->label('Satuan')
                                     ->reactive()
@@ -266,6 +240,7 @@ class OutTransactionResource extends Resource
             'index' => Pages\ListOutTransactions::route('/'),
             'create' => Pages\CreateOutTransaction::route('/create'),
             'edit' => Pages\EditOutTransaction::route('/{record}/edit'),
+            //'cart' => Pages\CartPage::route('/cart'),
         ];
     }
 }

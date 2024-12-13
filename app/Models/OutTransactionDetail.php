@@ -14,7 +14,7 @@ class OutTransactionDetail extends Model
     protected $with = ['product'];
 
     protected $fillable = [
-        'in_transaction_id',
+        'out_transaction_id',
         'product_id',
         'qty',
         'unit',
