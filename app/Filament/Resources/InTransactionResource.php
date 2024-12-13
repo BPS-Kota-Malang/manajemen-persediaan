@@ -14,6 +14,7 @@ use Filament\Tables\Table;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPdf\Facade\Pdf;
 
 class InTransactionResource extends Resource
 {
@@ -209,6 +210,18 @@ class InTransactionResource extends Resource
                 Tables\Columns\TextColumn::make('total')
                     ->label('Total')
                     ->searchable(),
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('export_pdf')
+                    ->label('Export PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->action(function () {
+                        $transactions = InTransaction::with(['employee', 'inTransactionDetails.product'])->get();
+                        $pdf = Pdf::loadView('userPDF', ['transactions' => $transactions]);
+                        return response()->streamDownload(function () use ($pdf) {
+                            echo $pdf->output();
+                        }, 'intransaction_report.pdf');
+                    })
             ])
             ->defaultSort('updated_at', 'desc')
             ->filters([

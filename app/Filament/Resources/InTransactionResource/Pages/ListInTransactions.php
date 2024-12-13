@@ -13,7 +13,9 @@ class ListInTransactions extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            Actions\ButtonAction::make()->url(fn()=> route('download.tes'))->openUrlInNewTab( ),
             Actions\CreateAction::make(),
+            
         ];
     }
 }
