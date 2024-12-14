@@ -7,9 +7,18 @@
             font-family: Arial, sans-serif;
             margin: 20px;
         }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
+        .header-table {
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+        }
+        .header-table td {
+            border: none;
+            vertical-align: middle;
+            padding: 0;
+        }
+        .logo-cell {
+            width: 120px; /* Sesuaikan dengan lebar logo */
         }
         .logo {
             width: 100px;
@@ -18,24 +27,38 @@
         .title {
             font-size: 20px;
             font-weight: bold;
-            margin: 10px 0;
+            margin: 0;
+            line-height: 1.2;
+        }
+        .title-italic {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0;
+            line-height: 1.2;
+            font-style: italic;
         }
         .address {
             font-size: 12px;
+            margin: 5px 0;
+            line-height: 1.4;
+        }
+        .divider {
+            border-top: 2px solid #000;
+            margin-top: 10px;
             margin-bottom: 20px;
         }
-        table {
+        .content-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
-        th, td {
+        .content-table th, .content-table td {
             border: 1px solid #000;
             padding: 8px;
             text-align: left;
             font-size: 12px;
         }
-        th {
+        .content-table th {
             background-color: #f2f2f2;
         }
         .footer {
@@ -46,20 +69,27 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <img src="{{ public_path('images/logobps1.png') }}" class="logo">
-        <div class="title">BADAN PUSAT STATISTIK</div>
-        <div class="title">KOTA MALANG</div>
-        <div class="address">
-            Jl. Janti Bar. No.47, Bandungrejosari, Kec. Sukun, Kota Malang, Jawa Timur 65148<br>
-            Telp: (0341) 801164, Email: bps3573@bps.go.id
-        </div>
-    </div>
+    <table class="header-table">
+        <tr>
+            <td class="logo-cell">
+                <img src="{{ public_path('images/logobps1.png') }}" class="logo">
+            </td>
+            <td style="padding-left: 10px;">
+                <div class="title-italic">BADAN PUSAT STATISTIK</div>
+                <div class="title-italic">KOTA MALANG</div>
+                <div class="address">
+                    Jl. Janti Bar. No.47, Bandungrejosari, Kec. Sukun, Kota Malang, Jawa Timur 65148<br>
+                    Telp: (0341) 801164, Email: bps3573@bps.go.id
+                </div>
+            </td>
+        </tr>
+    </table>
+    <div class="divider"></div>
 
     <h2 style="text-align: center;">Daftar Transaksi Masuk</h2>
     <p>Tanggal Cetak: {{ date('d-m-Y') }}</p>
 
-    <table>
+    <table class="content-table">
         <thead>
             <tr>
                 <th>No</th>

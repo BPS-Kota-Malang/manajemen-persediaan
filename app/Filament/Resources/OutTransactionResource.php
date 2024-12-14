@@ -39,6 +39,12 @@ class OutTransactionResource extends Resource
                     ])
                     ->columnSpan(4),
 
+                Forms\Components\DatePicker::make('date')
+                    ->label('Tanggal')
+                    ->required()
+                    ->default(now())
+                    ->columnSpan(3),
+
                 Forms\Components\Section::make('Barang Keluar')
                     ->schema([
                         Forms\Components\Repeater::make('out_transaction_details')
@@ -172,11 +178,11 @@ class OutTransactionResource extends Resource
 
     public static function mutateFormDataBeforeCreate(array $data): array
     {
-        dd($data); // Debug data untuk melihat apakah masih ada referensi ke 'amount'
         foreach ($data['out_transaction_details'] as &$out_detail) {
             $product = Product::find($out_detail['product_id']);
             if ($product) {
                 $out_detail['qty_in_pcs'] = (float) ($out_detail['qty'] ?? 0) * (float) $product->conversion_rate;
+                $out_detail['date'] = $data['date'];
             } else {
                 $out_detail['qty_in_pcs'] = 0;
             }
@@ -201,8 +207,8 @@ class OutTransactionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('created_at')
-                    ->date('d M Y - H:i:s')
+                Tables\Columns\TextColumn::make('date')
+                    ->date('d M Y')
                     ->timezone('Asia/Jakarta')
                     ->sortable()
                     ->searchable(),

@@ -12,7 +12,9 @@ class OutTransaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'employee_id', 'total'
+        'date',
+        'employee_id',
+        'total'
     ];
 
     // Relasi ke tabel employees
