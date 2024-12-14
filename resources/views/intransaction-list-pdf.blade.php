@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Laporan Transaksi Masuk</title>
+    <title>Daftar Transaksi Masuk</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -47,7 +47,7 @@
 </head>
 <body>
     <div class="header">
-        <img src="{{ public_path('images/logo-bps.png') }}" class="logo">
+        <img src="{{ public_path('images/logobps1.png') }}" class="logo">
         <div class="title">BADAN PUSAT STATISTIK</div>
         <div class="title">KOTA MALANG</div>
         <div class="address">
@@ -56,7 +56,7 @@
         </div>
     </div>
 
-    <h2 style="text-align: center;">Laporan Transaksi Masuk</h2>
+    <h2 style="text-align: center;">Daftar Transaksi Masuk</h2>
     <p>Tanggal Cetak: {{ date('d-m-Y') }}</p>
 
     <table>
@@ -78,12 +78,18 @@
                 <td>Rp {{ number_format($transaction->total, 0, ',', '.') }}</td>
                 <td>
                     @foreach($transaction->inTransactionDetails as $detail)
-                        - {{ $detail->product->name }} ({{ $detail->qty }} {{ $detail->unit }})<br>
+                        - {{ $detail->product->name }} ({{ $detail->qty }} {{ $detail->unit }}) - Rp {{ number_format($detail->amount, 0, ',', '.') }}<br>
                     @endforeach
                 </td>
             </tr>
             @endforeach
         </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" style="text-align: right;"><strong>Total Keseluruhan:</strong></td>
+                <td colspan="2"><strong>Rp {{ number_format($transactions->sum('total'), 0, ',', '.') }}</strong></td>
+            </tr>
+        </tfoot>
     </table>
 
     <div class="footer">

@@ -14,7 +14,8 @@ use Filament\Tables\Table;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
-use Barryvdh\DomPdf\Facade\Pdf;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Filament\Tables\Filters\Filter;
 
 class InTransactionResource extends Resource
 {
@@ -215,17 +216,56 @@ class InTransactionResource extends Resource
                 Tables\Actions\Action::make('export_pdf')
                     ->label('Export PDF')
                     ->icon('heroicon-o-document-arrow-down')
-                    ->action(function () {
-                        $transactions = InTransaction::with(['employee', 'inTransactionDetails.product'])->get();
-                        $pdf = Pdf::loadView('userPDF', ['transactions' => $transactions]);
+                    ->action(function ($livewire) {
+
+                        // Get the current filter values
+                        $filters = $livewire->tableFilters;  // Menggunakan tableFilters property
+                        $dateFrom = $filters['date_range']['from'] ?? null;
+                        $dateUntil = $filters['date_range']['until'] ?? null;
+
+                        // Query with date filter if provided
+                        $query = InTransaction::with(['employee', 'inTransactionDetails.product']);
+                        
+                        if ($dateFrom) {
+                            $query->whereDate('date', '>=', $dateFrom);
+                        }
+                        if ($dateUntil) {
+                            $query->whereDate('date', '<=', $dateUntil);
+                        }
+
+                        $transactions = $query->orderBy('date', 'desc')->get();
+
+                        $pdf = Pdf::loadView('intransaction-list-pdf', [
+                            'transactions' => $transactions
+                        ]);
+
                         return response()->streamDownload(function () use ($pdf) {
                             echo $pdf->output();
-                        }, 'intransaction_report.pdf');
+                        }, 'daftar_transaksi_masuk.pdf');
                     })
+                 
             ])
             ->defaultSort('updated_at', 'desc')
             ->filters([
-                //
+                Filter::make('date_range')
+                    ->form([
+                        DatePicker::make('from')
+                            ->label('Dari Tanggal'),
+                        DatePicker::make('until')
+                            ->label('Sampai Tanggal'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('date', '>=', $date),
+                            )
+                            ->when(
+                                $data['until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('date', '<=', $date),
+                            );
+                    })
+                    
             ])
             ->actions([
                 Tables\Actions\Action::make('detail')
