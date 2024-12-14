@@ -10,6 +10,10 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\Filter;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Filament\Forms\Components\DatePicker;
+use Illuminate\Database\Eloquent\Builder;
 
 class OutTransactionResource extends Resource
 {
@@ -205,6 +209,55 @@ class OutTransactionResource extends Resource
                 Tables\Columns\TextColumn::make('employee.name')
                     ->label('Nama Pegawai')
                     ->searchable(),
+            ])
+            
+            ->headerActions([
+                Tables\Actions\Action::make('export_pdf')
+                    ->label('Export PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->action(function ($livewire) {
+                        $filters = $livewire->tableFilters;
+                        $dateFrom = $filters['date_range']['from'] ?? null;
+                        $dateUntil = $filters['date_range']['until'] ?? null;
+    
+                        $query = OutTransaction::with(['employee', 'outTransactionDetails.product']);
+                        
+                        if ($dateFrom) {
+                            $query->whereDate('date', '>=', $dateFrom);
+                        }
+                        if ($dateUntil) {
+                            $query->whereDate('date', '<=', $dateUntil);
+                        }
+    
+                        $transactions = $query->orderBy('date', 'desc')->get();
+    
+                        $pdf = Pdf::loadView('outtransaction-list-pdf', [
+                            'transactions' => $transactions
+                        ]);
+    
+                        return response()->streamDownload(function () use ($pdf) {
+                            echo $pdf->output();
+                        }, 'daftar_transaksi_keluar.pdf');
+                    }),
+            ])
+            ->defaultSort('updated_at', 'desc')
+            ->filters([
+                Filter::make('date_range')
+                    ->form([
+                        DatePicker::make('from')->label('Dari Tanggal'),
+                        DatePicker::make('until')->label('Sampai Tanggal'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('date', '>=', $date),
+                            )
+                            ->when(
+                                $data['until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('date', '<=', $date),
+                            );
+                    }),
             ])
             ->defaultSort('updated_at', 'desc')
             ->actions([
