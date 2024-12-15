@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Route;
 use App\Filament\Pages\OutTransactionCart;
 use App\Http\Controllers\OutTransactionController;
 use App\Http\Controllers\OutTransactionCartController;
+use App\Http\Controllers\InTransactionController;
 
 
 Route::get('/', function () {
@@ -76,5 +77,8 @@ Route::get('/out-transactions/cart/{productId?}', OutTransactionCart::class)
 Route::get('download', function(){
     return 'try report pdf';
 })->name('download.tes');
+
+Route::get('/export/intransaction-pdf', [InTransactionController::class, 'exportPDF'])
+    ->name('export.intransaction.pdf');
 
 require __DIR__.'/auth.php';

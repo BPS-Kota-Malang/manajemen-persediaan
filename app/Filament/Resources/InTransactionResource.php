@@ -216,34 +216,16 @@ class InTransactionResource extends Resource
                 Tables\Actions\Action::make('export_pdf')
                     ->label('Export PDF')
                     ->icon('heroicon-o-document-arrow-down')
-                    ->action(function ($livewire) {
-
-                        // Get the current filter values
-                        $filters = $livewire->tableFilters;  // Menggunakan tableFilters property
+                    ->url(function ($livewire) {
+                        $filters = $livewire->tableFilters;
                         $dateFrom = $filters['date_range']['from'] ?? null;
                         $dateUntil = $filters['date_range']['until'] ?? null;
 
-                        // Query with date filter if provided
-                        $query = InTransaction::with(['employee', 'inTransactionDetails.product']);
-                        
-                        if ($dateFrom) {
-                            $query->whereDate('date', '>=', $dateFrom);
-                        }
-                        if ($dateUntil) {
-                            $query->whereDate('date', '<=', $dateUntil);
-                        }
-
-                        $transactions = $query->orderBy('date', 'desc')->get();
-
-                        $pdf = Pdf::loadView('intransaction-list-pdf', [
-                            'transactions' => $transactions
+                        return route('export.intransaction.pdf', [
+                            'from' => $dateFrom,
+                            'until' => $dateUntil
                         ]);
-
-                        return response()->streamDownload(function () use ($pdf) {
-                            echo $pdf->output();
-                        }, 'daftar_transaksi_masuk.pdf');
-                    })
-                 
+                    }, shouldOpenInNewTab: true)
             ])
             ->defaultSort('updated_at', 'desc')
             ->filters([
