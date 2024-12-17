@@ -87,6 +87,12 @@
     <div class="divider"></div>
 
     <h2 style="text-align: center;">Daftar Transaksi Keluar</h2>
+    @if($from || $until)
+        <p>Periode: 
+            {{ $from ? \Carbon\Carbon::parse($from)->format('d-m-Y') : '' }}
+            {{ $until ? ' s/d ' . \Carbon\Carbon::parse($until)->format('d-m-Y') : '' }}
+        </p>
+    @endif
     <p>Tanggal Cetak: {{ date('d-m-Y') }}</p>
 
     <table class="content-table">
@@ -100,16 +106,16 @@
         </thead>
         <tbody>
             @foreach($transactions as $index => $transaction)
-            <tr>
-                <td>{{ $index + 1 }}</td>
-                <td>{{ date('d-m-Y', strtotime($transaction->date)) }}</td>
-                <td>{{ $transaction->employee->name }}</td>
-                <td>
-                    @foreach($transaction->outTransactionDetails as $detail)
-                        - {{ $detail->product->name }} ({{ $detail->qty }} {{ $detail->unit }})<br>
-                    @endforeach
-                </td>
-            </tr>
+                <tr>
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ date('d-m-Y', strtotime($transaction->date)) }}</td>
+                    <td>{{ $transaction->employee->name }}</td>
+                    <td>
+                        @foreach($transaction->outTransactionDetails as $detail)
+                            - {{ $detail->product->name }} ({{ $detail->qty }} {{ $detail->unit }})<br>
+                        @endforeach
+                    </td>
+                </tr>
             @endforeach
         </tbody>
     </table>

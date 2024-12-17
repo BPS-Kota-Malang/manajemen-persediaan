@@ -216,42 +216,29 @@ class OutTransactionResource extends Resource
                     ->label('Nama Pegawai')
                     ->searchable(),
             ])
-            
             ->headerActions([
                 Tables\Actions\Action::make('export_pdf')
                     ->label('Export PDF')
                     ->icon('heroicon-o-document-arrow-down')
-                    ->action(function ($livewire) {
+                    ->url(function ($livewire) {
                         $filters = $livewire->tableFilters;
                         $dateFrom = $filters['date_range']['from'] ?? null;
                         $dateUntil = $filters['date_range']['until'] ?? null;
-    
-                        $query = OutTransaction::with(['employee', 'outTransactionDetails.product']);
-                        
-                        if ($dateFrom) {
-                            $query->whereDate('date', '>=', $dateFrom);
-                        }
-                        if ($dateUntil) {
-                            $query->whereDate('date', '<=', $dateUntil);
-                        }
-    
-                        $transactions = $query->orderBy('date', 'desc')->get();
-    
-                        $pdf = Pdf::loadView('outtransaction-list-pdf', [
-                            'transactions' => $transactions
+
+                        return route('export.outtransaction.pdf', [
+                            'from' => $dateFrom,
+                            'until' => $dateUntil
                         ]);
-    
-                        return response()->streamDownload(function () use ($pdf) {
-                            echo $pdf->output();
-                        }, 'daftar_transaksi_keluar.pdf');
-                    }),
+                    }, shouldOpenInNewTab: true)
             ])
             ->defaultSort('updated_at', 'desc')
             ->filters([
                 Filter::make('date_range')
                     ->form([
-                        DatePicker::make('from')->label('Dari Tanggal'),
-                        DatePicker::make('until')->label('Sampai Tanggal'),
+                        DatePicker::make('from')
+                            ->label('Dari Tanggal'),
+                        DatePicker::make('until')
+                            ->label('Sampai Tanggal'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -263,9 +250,9 @@ class OutTransactionResource extends Resource
                                 $data['until'],
                                 fn (Builder $query, $date): Builder => $query->whereDate('date', '<=', $date),
                             );
-                    }),
+                    })
+                    
             ])
-            ->defaultSort('updated_at', 'desc')
             ->actions([
                 Tables\Actions\Action::make('detail')
                     ->label('Detail')

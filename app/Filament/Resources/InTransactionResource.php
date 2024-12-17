@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Tables\Filters\Filter;
+use Filament\Support\Enums\Alignment;
 
 class InTransactionResource extends Resource
 {
@@ -253,17 +254,25 @@ class InTransactionResource extends Resource
                 Tables\Actions\Action::make('detail')
                     ->label('Detail')
                     ->icon('heroicon-o-magnifying-glass')
-                    ->extraAttributes(['class' => 'custom-icon'])
-                    ->action(fn(InTransaction $record) => static::showTransactionDetails($record))
                     ->modalHeading('Detail Transaksi')
-                    ->modalButton('Close')
+                    ->modalWidth('4xl')
+                    ->extraAttributes([
+                        'x-data' => '',
+                        'x-on:click' => '
+                            $dispatch("open-modal", { 
+                                id: "detail-modal",
+                                properties: {
+                                    modalBgClass: "bg-gray-500/10"
+                                }
+                            })
+                        '
+                    ])
+                    ->modalAlignment(Alignment::Center)
                     ->modalContent(function (InTransaction $record) {
                         return view('filament.components.intransaction-detail-modal', [
-                            'details' => $record->inTransactionDetails, // Ambil detail transaksi dari relasi
+                            'details' => $record->inTransactionDetails
                         ]);
                     }),
-
-
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])

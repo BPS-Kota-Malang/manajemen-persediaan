@@ -92,4 +92,11 @@ class InTransactionController extends Controller
 
         return $pdf->stream('daftar_transaksi_masuk.pdf');
     }
+
+    public function showDetail(InTransaction $intransaction)
+    {
+        return view('intransaction-detail', [
+            'details' => $intransaction->inTransactionDetails
+        ]);
+    }
 }

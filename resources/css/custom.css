@@ -1,0 +1,4 @@
+/* Override Filament modal backdrop */
+.filament-modal-window {
+    --tw-bg-opacity: 0.1 !important;
+} 
