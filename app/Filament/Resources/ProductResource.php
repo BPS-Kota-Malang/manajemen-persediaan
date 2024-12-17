@@ -14,8 +14,9 @@ use Filament\Tables;
 use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Table;
 use App\Filament\Imports\ProductImporter;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 
-class ProductResource extends Resource
+class ProductResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Product::class;
 
@@ -129,5 +130,17 @@ class ProductResource extends Resource
     public static function getQrCodeUrl(Product $product): string
     {
         return route('outtransactions.cart', ['product_id' => $product->id]);
+    }
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any'
+        ];
     }
 }

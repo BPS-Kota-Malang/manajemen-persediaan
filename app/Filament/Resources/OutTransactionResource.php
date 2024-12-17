@@ -5,13 +5,14 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\OutTransactionResource\Pages;
 use App\Models\OutTransaction;
 use App\Models\Product;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class OutTransactionResource extends Resource
+class OutTransactionResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = OutTransaction::class;
 
@@ -241,6 +242,18 @@ class OutTransactionResource extends Resource
             'create' => Pages\CreateOutTransaction::route('/create'),
             'edit' => Pages\EditOutTransaction::route('/{record}/edit'),
             //'cart' => Pages\CartPage::route('/cart'),
+        ];
+    }
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any'
         ];
     }
 }

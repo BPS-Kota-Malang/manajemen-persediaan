@@ -6,6 +6,7 @@ use App\Filament\Resources\InTransactionResource\Pages;
 use App\Filament\Resources\InTransactionResource\RelationManagers;
 use App\Models\InTransaction;
 use App\Models\Product;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -15,7 +16,7 @@ use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 
-class InTransactionResource extends Resource
+class InTransactionResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = InTransaction::class;
 
@@ -322,5 +323,17 @@ class InTransactionResource extends Resource
         $data['total'] = array_sum(array_column($data['in_transaction_details'], 'amount'));
 
         return $data;
+    }
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any'
+        ];
     }
 }
