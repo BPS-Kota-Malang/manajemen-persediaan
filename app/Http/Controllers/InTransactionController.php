@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\InTransaction;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class InTransactionController extends Controller
 {
@@ -62,5 +64,39 @@ class InTransactionController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function exportPDF(Request $request)
+    {
+        $dateFrom = $request->from;
+        $dateUntil = $request->until;
+
+        $query = InTransaction::with(['employee', 'inTransactionDetails.product']);
+        
+        if ($dateFrom) {
+            $query->whereDate('date', '>=', $dateFrom);
+        }
+        if ($dateUntil) {
+            $query->whereDate('date', '<=', $dateUntil);
+        }
+
+        $transactions = $query->orderBy('date', 'desc')->get();
+
+        $pdf = Pdf::loadView('intransaction-list-pdf', [
+            'transactions' => $transactions,
+            'filters' => [
+                'from' => $dateFrom,
+                'until' => $dateUntil
+            ]
+        ]);
+
+        return $pdf->stream('daftar_transaksi_masuk.pdf');
+    }
+
+    public function showDetail(InTransaction $intransaction)
+    {
+        return view('intransaction-detail', [
+            'details' => $intransaction->inTransactionDetails
+        ]);
     }
 }

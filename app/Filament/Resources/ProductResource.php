@@ -95,7 +95,12 @@ class ProductResource extends Resource implements HasShieldPermissions
             ->filters([])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                ->requiresConfirmation()
+                ->modalHeading('Hapus Produk')
+                ->modalDescription('Apakah anda yakin untuk menghapus produk ini?')
+                ->modalSubmitActionLabel('Ya, Hapus')
+                ->modalCancelActionLabel('Batal'), 
                 Tables\Actions\Action::make('Qr Code')
                     ->icon('heroicon-o-qr-code')
                     ->url(fn(Product $record) => static::getUrl('qr-code', ['record' => $record->getKey()])),

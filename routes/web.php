@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\Route;
 use App\Filament\Pages\OutTransactionCart;
 use App\Http\Controllers\OutTransactionController;
 use App\Http\Controllers\OutTransactionCartController;
+use App\Http\Controllers\InTransactionController;
+use App\Models\OutTransaction;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 
 
 Route::get('/', function () {
@@ -72,4 +76,17 @@ Route::post('/out-transactions/cart/add', [App\Http\Controllers\OutTransactionCo
 
 Route::get('/out-transactions/cart/{productId?}', OutTransactionCart::class)
     ->name('outtransactions.cart');
+
+Route::get('/export/intransaction-pdf', [InTransactionController::class, 'exportPDF'])
+    ->name('export.intransaction.pdf');
+
+Route::get('/intransaction/{intransaction}/detail', [InTransactionController::class, 'showDetail'])
+    ->name('intransaction.detail');
+
+Route::get('/export/outtransaction/pdf', [OutTransactionController::class, 'exportPDF'])
+    ->name('export.outtransaction.pdf');
+
+Route::get('/outtransaction/{outTransaction}/detail', [OutTransactionController::class, 'showDetail'])
+    ->name('outtransaction.detail');
+
 require __DIR__.'/auth.php';

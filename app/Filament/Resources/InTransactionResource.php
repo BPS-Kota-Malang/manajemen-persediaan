@@ -15,6 +15,9 @@ use Filament\Tables\Table;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Filament\Tables\Filters\Filter;
+use Filament\Support\Enums\Alignment;
 
 class InTransactionResource extends Resource implements HasShieldPermissions
 {
@@ -211,27 +214,73 @@ class InTransactionResource extends Resource implements HasShieldPermissions
                     ->label('Total')
                     ->searchable(),
             ])
+            ->headerActions([
+                Tables\Actions\Action::make('export_pdf')
+                    ->label('Export PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->url(function ($livewire) {
+                        $filters = $livewire->tableFilters;
+                        $dateFrom = $filters['date_range']['from'] ?? null;
+                        $dateUntil = $filters['date_range']['until'] ?? null;
+
+                        return route('export.intransaction.pdf', [
+                            'from' => $dateFrom,
+                            'until' => $dateUntil
+                        ]);
+                    }, shouldOpenInNewTab: true)
+            ])
             ->defaultSort('updated_at', 'desc')
             ->filters([
-                //
+                Filter::make('date_range')
+                    ->form([
+                        DatePicker::make('from')
+                            ->label('Dari Tanggal'),
+                        DatePicker::make('until')
+                            ->label('Sampai Tanggal'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('date', '>=', $date),
+                            )
+                            ->when(
+                                $data['until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('date', '<=', $date),
+                            );
+                    })
+                    
             ])
             ->actions([
                 Tables\Actions\Action::make('detail')
                     ->label('Detail')
                     ->icon('heroicon-o-magnifying-glass')
-                    ->extraAttributes(['class' => 'custom-icon'])
-                    ->action(fn(InTransaction $record) => static::showTransactionDetails($record))
                     ->modalHeading('Detail Transaksi')
-                    ->modalButton('Close')
+                    ->modalWidth('4xl')
+                    ->extraAttributes([
+                        'x-data' => '',
+                        'x-on:click' => '
+                            $dispatch("open-modal", { 
+                                id: "detail-modal",
+                                properties: {
+                                    modalBgClass: "bg-gray-500/10"
+                                }
+                            })
+                        '
+                    ])
+                    ->modalAlignment(Alignment::Center)
                     ->modalContent(function (InTransaction $record) {
                         return view('filament.components.intransaction-detail-modal', [
-                            'details' => $record->inTransactionDetails, // Ambil detail transaksi dari relasi
+                            'details' => $record->inTransactionDetails
                         ]);
                     }),
-
-
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                ->requiresConfirmation()
+                ->modalHeading('Hapus Transaksi Masuk')
+                ->modalDescription('Apakah anda yakin untuk menghapus transaksi ini?')
+                ->modalSubmitActionLabel('Ya, Hapus')
+                ->modalCancelActionLabel('Batal')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

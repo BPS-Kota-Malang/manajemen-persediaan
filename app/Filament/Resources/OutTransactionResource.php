@@ -11,6 +11,10 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\Filter;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Filament\Forms\Components\DatePicker;
+use Illuminate\Database\Eloquent\Builder;
 
 class OutTransactionResource extends Resource implements HasShieldPermissions
 {
@@ -35,6 +39,12 @@ class OutTransactionResource extends Resource implements HasShieldPermissions
                             ->required(),
                     ])
                     ->columnSpan(4),
+
+                Forms\Components\DatePicker::make('date')
+                    ->label('Tanggal')
+                    ->required()
+                    ->default(now())
+                    ->columnSpan(3),
 
                 Forms\Components\Section::make('Barang Keluar')
                     ->schema([
@@ -169,11 +179,11 @@ class OutTransactionResource extends Resource implements HasShieldPermissions
 
     public static function mutateFormDataBeforeCreate(array $data): array
     {
-        dd($data); // Debug data untuk melihat apakah masih ada referensi ke 'amount'
         foreach ($data['out_transaction_details'] as &$out_detail) {
             $product = Product::find($out_detail['product_id']);
             if ($product) {
                 $out_detail['qty_in_pcs'] = (float) ($out_detail['qty'] ?? 0) * (float) $product->conversion_rate;
+                $out_detail['date'] = $data['date'];
             } else {
                 $out_detail['qty_in_pcs'] = 0;
             }
@@ -198,8 +208,8 @@ class OutTransactionResource extends Resource implements HasShieldPermissions
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('created_at')
-                    ->date('d M Y - H:i:s')
+                Tables\Columns\TextColumn::make('date')
+                    ->date('d M Y')
                     ->timezone('Asia/Jakarta')
                     ->sortable()
                     ->searchable(),
@@ -207,7 +217,43 @@ class OutTransactionResource extends Resource implements HasShieldPermissions
                     ->label('Nama Pegawai')
                     ->searchable(),
             ])
+            ->headerActions([
+                Tables\Actions\Action::make('export_pdf')
+                    ->label('Export PDF')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->url(function ($livewire) {
+                        $filters = $livewire->tableFilters;
+                        $dateFrom = $filters['date_range']['from'] ?? null;
+                        $dateUntil = $filters['date_range']['until'] ?? null;
+
+                        return route('export.outtransaction.pdf', [
+                            'from' => $dateFrom,
+                            'until' => $dateUntil
+                        ]);
+                    }, shouldOpenInNewTab: true)
+            ])
             ->defaultSort('updated_at', 'desc')
+            ->filters([
+                Filter::make('date_range')
+                    ->form([
+                        DatePicker::make('from')
+                            ->label('Dari Tanggal'),
+                        DatePicker::make('until')
+                            ->label('Sampai Tanggal'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('date', '>=', $date),
+                            )
+                            ->when(
+                                $data['until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('date', '<=', $date),
+                            );
+                    })
+                    
+            ])
             ->actions([
                 Tables\Actions\Action::make('detail')
                     ->label('Detail')
@@ -221,7 +267,12 @@ class OutTransactionResource extends Resource implements HasShieldPermissions
                     }),
 
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                ->requiresConfirmation()
+                ->modalHeading('Hapus Transaksi Keluar')
+                ->modalDescription('Apakah anda yakin untuk menghapus transaksi ini?')
+                ->modalSubmitActionLabel('Ya, Hapus')
+                ->modalCancelActionLabel('Batal')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

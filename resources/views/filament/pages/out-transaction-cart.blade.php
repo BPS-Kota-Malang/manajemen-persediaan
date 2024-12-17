@@ -1,6 +1,8 @@
-
 <x-filament::page>
-    <div class="space-y-4">
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@endpush 
+<div class="space-y-4">
 
          <!-- QR Scanner Section -->
          <div class="mb-6 bg-white p-4 rounded-lg shadow">
@@ -69,15 +71,74 @@
                                     {{ $item['unit_2'] ?? 'pcs' }} {{-- Mengambil unit_2 dari product --}}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-    <button 
-        wire:click="removeItem({{ $item['id'] }})"
-        class="inline-flex items-center px-3 py-2 bg-red-600 hover:bg-red-700 rounded-md">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-        </svg>
-        <span class="ml-2 text-white font-bold text-sm">Delete</span>
-    </button>
-</td>
+                                <button 
+                    onclick="confirmDelete({{ $item['id'] }})"
+                    style="display: inline-flex; 
+                           align-items: center; 
+                           padding: 8px 12px; 
+                           background-color: #DC2626; 
+                           color: white; 
+                           border-radius: 6px;
+                           border: none;
+                           cursor: pointer;">
+                    <svg xmlns="http://www.w3.org/2000/svg" 
+                         style="width: 20px; height: 20px;"
+                         fill="none" 
+                         viewBox="0 0 24 24" 
+                         stroke="currentColor">
+                        <path stroke-linecap="round" 
+                              stroke-linejoin="round" 
+                              stroke-width="2" 
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span style="margin-left: 8px; font-weight: 500;">Delete</span>
+                </button>
+            </td>
+    @push('scripts')
+<script>
+    function confirmDelete(productId) {
+        Swal.fire({
+            title: 'Konfirmasi',
+            text: "Apakah anda yakin akan menghapus cart ini?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                @this.call('removeItem', productId);
+            }
+        });
+    }
+
+    // Untuk menampilkan notifikasi sukses setelah item dihapus
+    window.addEventListener('swal:success', event => {
+        Swal.fire({
+            title: event.detail.title,
+            text: event.detail.text,
+            icon: event.detail.icon,
+            timer: event.detail.timer,
+            showConfirmButton: false
+        }).then(() => {
+            // Refresh halaman jika diperlukan
+            window.location.reload();
+        });
+    });
+
+    window.addEventListener('swal:error', event => {
+        Swal.fire({
+            title: event.detail.title,
+            text: event.detail.text,
+            icon: event.detail.icon,
+            timer: event.detail.timer,
+            showConfirmButton: false
+        });
+    });
+</script>
+@endpush
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -94,14 +155,42 @@
                 </x-filament::button>
                 
                 <x-filament::button
-                    color="danger" 
-                    class="bg-red-600 hover:bg-red-700 text-white font-semibold"
-                    wire:click="resetCart">
-                    Reset Cart
+                onclick="confirmResetCart()"
+                color="danger" 
+                class="bg-red-600 hover:bg-red-700 text-white font-semibold">
+                Reset Cart
                 </x-filament::button>
-            </div>
-
-
+                </div>
+                @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+        function confirmResetCart() {
+        Swal.fire({
+            title: 'Konfirmasi',
+            text: "Apakah anda yakin ingin menghapus semua cart ini?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus semua!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                @this.call('resetCart');
+            }
+        });
+    }
+    window.addEventListener('swal:success', event => {
+        Swal.fire({
+            title: event.detail.title,
+            text: event.detail.text,
+            icon: event.detail.icon,
+            timer: event.detail.timer,
+            showConfirmButton: false
+        });
+    });
+</script>
+@endpush
         @else
             <p class="text-gray-500">Your cart is empty.</p>
         @endif

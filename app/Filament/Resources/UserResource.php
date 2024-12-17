@@ -76,7 +76,12 @@ class UserResource extends Resource implements HasShieldPermissions
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                ->requiresConfirmation()
+                ->modalHeading('Hapus User')
+                ->modalDescription('Apakah anda yakin untuk menghapus user ini?')
+                ->modalSubmitActionLabel('Ya, Hapus')
+                ->modalCancelActionLabel('Batal')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
