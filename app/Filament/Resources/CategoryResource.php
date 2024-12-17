@@ -44,7 +44,12 @@ class CategoryResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                ->requiresConfirmation()
+                ->modalHeading('Hapus Kategori')
+                ->modalDescription('Apakah anda yakin untuk menghapus kategori ini?')
+                ->modalSubmitActionLabel('Ya, Hapus')
+                ->modalCancelActionLabel('Batal')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

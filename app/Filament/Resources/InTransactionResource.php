@@ -274,7 +274,12 @@ class InTransactionResource extends Resource
                         ]);
                     }),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                ->requiresConfirmation()
+                ->modalHeading('Hapus Transaksi Masuk')
+                ->modalDescription('Apakah anda yakin untuk menghapus transaksi ini?')
+                ->modalSubmitActionLabel('Ya, Hapus')
+                ->modalCancelActionLabel('Batal')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
