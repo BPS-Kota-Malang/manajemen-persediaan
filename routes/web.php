@@ -77,10 +77,6 @@ Route::post('/out-transactions/cart/add', [App\Http\Controllers\OutTransactionCo
 Route::get('/out-transactions/cart/{productId?}', OutTransactionCart::class)
     ->name('outtransactions.cart');
 
-Route::get('download', function(){
-    return 'try report pdf';
-})->name('download.tes');
-
 Route::get('/export/intransaction-pdf', [InTransactionController::class, 'exportPDF'])
     ->name('export.intransaction.pdf');
 
